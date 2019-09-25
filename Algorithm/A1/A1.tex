@@ -234,6 +234,93 @@ $$f(n) = O(n)$$
 显然，$T(n) = O(\log n)$
 
 \section{}
+\subsection*{算法思路}
+递归比较字符串$A$和$B$的问题 EQUIV($A, B$) ，将$A$分为等长的$A_1$，$A_2$，将$B$分为$B_1$，$B_2$。如果 EQUIV($A_1, B_1$) \& EQUIV($A_2, B_2$) 或者 EQUIV($A_1, B_2$) \& EQUIV($A_2, B_1$) 成立，那么原问题成立，否则原问题不成立。
 
+\subsection*{伪代码}
+\begin{algorithm}
+    \caption{判断字符串等价}
+    \begin{algorithmic}[1]
+        \Require $A$数组，$B$数组
+        \Ensure $A$和$B$是否等价
+        \Function {Equiv}{$A[1..n], B[1..n]$}
+            \If{$n$ is not multiple of $2$}
+                \State \Return $A=B$
+            \EndIf
+            \If{Equiv($A[1..n/2], B[1..n/2]$) and Equiv($A[n/2+1..n], B[n/2+1..n])$ or Equiv($A[1..n/2], B[n/2+1..1]$) and Equiv($A[n/2+1..n], B[1..n/2]$)}
+                \State \Return True
+            \Else
+                \State \Return False
+            \EndIf
+        \EndFunction
+    \end{algorithmic}
+\end{algorithm}
+
+\subsection*{复杂度分析}
+设$n=2^kq$，其中$q\perp 2$。那么原问题 EQUIV($A[1..n], B[1..n]$) 的时间复杂度$T(n)$存在递归式：
+\begin{equation*}
+    T(n) = 
+    \begin{cases}
+        n &, n\perp 2 \\
+        4T(n/2) + 1 &, \text{else}
+    \end{cases}
+\end{equation*}
+
+由主方法，可以知道
+$$T(n) = O(qk^2)$$
+
+\section{}
+\subsection*{算法思路}
+由于给出的序列结构具有高度的递归性，且构成一个二叉树。从$S$串的选取的任意子串$S[l..r]$，等价于从该二叉树中选取中序遍历排序在$[l..r]$范围内的全部结点。很明显，这些结点中深度最浅的结点是唯一的，对应到子串中，则表示字典序最大的字符是存在且唯一的，不妨将这个字符称作$l$到$r$的最大字符，记为$p(l, r)$，例如，$S[2..5]=baca$，那么$p(2, 5)=c$。
+
+其次，我们还可以用下标$i$推出$S[i]$这个字符的内容。如果定义lowbit$(i)$为$i$的最大的$2$的整数次幂的因子，即$i$的二进制表示中的最低为的$1$及其后面的$0$组成的二进制数。那么
+$$S[i]=\Sigma[\text{lowbit}(i)+1]$$
+（注意，这里用$\Sigma[1]$指代$a$，用$\Sigma[2]$指代$b$，以此类推）。同样的，定义highbit$(i)$为小于等于$i$的最大的$2$的整次幂，即$i$的二进制表示中的最高位的$1$。那么$p(l, r)$即是$l\leq x\leq r$的所有$x$中，lowbit值最大的那一个，即：
+$$p(l, r) = \mathop{\arg\max}_{l\leq x\leq r}{\{\text{lowbit}(x)\}}$$
+可以观察出，
+$$p(l, r) = \Sigma[\text{highbit}(l\oplus r)]$$
+其中$\oplus$表示按位异或。
+
+然后我们讨论$S$串的自相似性。对于任意的$x$，只要$\text{lowbit}(x) > p(l, r)$，就有
+$$S[l..r] = S[l+x..r+x]$$
+
+再次，我们尝试解决的最大公共子串问题，即是两个字符串的最大重合问题。在此例中，还可以转化为两个来源于同一棵二叉树的两个子部分的最大重叠问题。
+
+设我们的问题为LCS($l_1, r_1, l_2, r_2$)，表示求解$S[l_1..r_1]$和$S[l_2..r_2]$的最长公共子串。可以分情况讨论：
+
+\begin{itemize}
+    \item 如果$p(l_1, r_1)=p(l_2, r_2)$，那么可以将两个子区间平移，使得其最大字符重叠。平移之后两个子区间的最大重叠长度就是所求的最长公共子串的长度。
+    \item 如果$p(l_1, r_1) < p(l_2, r_2)$，那么仍然可以平移$[l_1..r_2]$，至$[l_1'..r_1']$中的最大字符与$[l_2, r_2]$中的最大字符两侧的第一个$p(l_1, r_1)$字符分别重合时，计算两次区间覆盖。较大者就是答案。
+\end{itemize}
+
+\subsubsection*{伪代码}
+\begin{algorithm}
+    \caption{判断字符串等价}
+    \begin{algorithmic}[1]
+        \Require $l_1, r_1, l_2, r_2$，表示所求的两个区间范围
+        \Ensure 最长公共子串的长度
+        \Function {Lcs}{$l_1, r_1, l_2, r_2$}
+            \State $p_1 \gets$highbit$(l_1\oplus r_1)$
+            \State $p_2 \gets$highbit$(l_2\oplus r_2)$
+            \State $l_1 \gets l_1 \mod 2p_1,\ r_1\gets r_1\mod 2p_1$
+            \State $l_2 \gets l_2 \mod 2p_2,\ r_2\gets r_2\mod 2p_2$
+            \If{$\Sigma[p_1] > \Sigma[p_2]$}
+                \State swap $[l_1, r_1]$ and $[l_2, r_2]$
+            \EndIf
+            \If{$p_1 = p_2$}
+                \State \Return Overlap($l_1, r_1, l_2, r_2$)
+            \Else
+                \State $\delta_1\gets p_2-2p_1$
+                \State $\delta_2\gets p_2+2p_1$
+                \State \Return Max(Overlap($l_1+\delta_1, r_1+\delta_1, l_2, r_2$), Overlap($l_1+\delta_2, r_1+\delta_2, l_2+\delta_2, r_2+\delta_2$))
+            \EndIf
+        \EndFunction
+    \end{algorithmic}
+\end{algorithm}
+
+\subsubsection*{复杂度}
+
+由于highbit$(x)$的操作复杂度为$O(\log x)$，所以原问题LCS($l_1, r_1, l_2, r_2$)的复杂度$T(l_1, r_1, l_2, r_2)$为：
+$$T(l_1, r_1, l_2, r_2)=O\left(\log\left(l_1\oplus r_1\right)+\log\left(l_2+\oplus r_2\right)\right)$$
 
 \end{document}
