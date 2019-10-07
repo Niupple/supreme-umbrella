@@ -1,0 +1,97 @@
+\documentclass[UTF8]{ctexart}
+\usepackage{amsmath,amssymb}
+\usepackage{fancyhdr}
+\usepackage{amsmath,bm}
+\usepackage{mathrsfs}
+\usepackage{ntheorem}
+\usepackage{graphicx}
+\usepackage{subfigure}
+\usepackage[top=2cm, bottom=2cm, left=2cm, right=2cm]{geometry}  
+\usepackage{algorithm}  
+\usepackage{algorithmicx}  
+\usepackage{algpseudocode}
+\usepackage{multirow}
+\usepackage{tikz}
+\usepackage{listings}
+\usepackage{xcolor}
+\usetikzlibrary{automata, positioning, arrows}
+\tikzset{
+    ->,
+    >=stealth,
+    node distance = 3cm,
+    every state/.style={thick, fill=gray!10},
+    initial text=$ $
+}
+\lstset{numbers=left, %设置行号位置
+        numberstyle=\tiny, %设置行号大小
+        keywordstyle=\color{blue}, %设置关键字颜色
+        commentstyle=\color[cmyk]{1,0,1,0}, %设置注释颜色
+        frame=single, %设置边框格式
+        escapeinside=``, %逃逸字符(1左面的键)，用于显示中文
+        %breaklines, %自动折行
+        extendedchars=false, %解决代码跨页时，章节标题，页眉等汉字不显示的问题
+        xleftmargin=2em,xrightmargin=2em, aboveskip=1em, %设置边距
+        tabsize=4, %设置tab空格数
+        showspaces=false %不显示空格
+    }
+\floatname{algorithm}{算法}  
+\renewcommand{\algorithmicrequire}{\textbf{输入:}}  
+\renewcommand{\algorithmicensure}{\textbf{输出:}}  
+
+\theorembodyfont{\normalfont\rm\CJKfamily{song}}
+%\theoremstyle{break}
+\newtheorem{theorem}{定理}
+\newtheorem{lemma}{引理}
+\newtheorem{proposition}{命题}
+\newtheorem*{proof}{证}[section]
+\newtheorem*{solution}{解}[section]
+\title{语法分析作业}
+\author{丁元杰 17231164}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section*{4-2.1}
+\subsection*{(1)}
+要求：
+\begin{itemize}
+    \item 文法中不存在左递归。左递归的文法无法找到递归边界。
+    \item 每一个非终结符的FIRST集合两两不相交。否则算法需要回溯。
+\end{itemize}
+
+\subsection*{(2)}
+自顶向下的分析方法需要依据每个分支的第一个符号的FIRST集合来判断往何处递归调用，左递归的文法中，左递归的部分无法找出这样的FIRST集合；而其他的文法即使有递归，只要递归的部分不在分支的第一个位置，就可以找到其FIRST集合，从而决定递归的方向，因而可以被自顶向下的分析方法分析语法。
+
+\section*{4-2.2}
+\lstinputlisting {4-2-2.py}
+
+\section*{4-2.3}
+\subsection*{(1)}
+\begin{align*}
+    FIRST(AcB) & = \{c\} \\
+    FIRST(Bd) & = \{a\} \\
+    FIRST(AaB) &= \{c\} \\
+    FIRST(c) &= \{c\} \\
+    FIRST(aA) &= \{a\} \\
+    FIRST(a) &= \{a\}
+\end{align*}
+
+\subsection*{(2)}
+该文法并不能用自顶向下的分析方法进行分析。因为
+\begin{itemize}
+    \item 存在左递归
+    \item FIRST集合存在交
+\end{itemize}
+
+\subsection*{(3)}
+新文法如下：
+\begin{align*}
+    Z&::=AcB \big| Bd\\
+    A&::=c\{aB\}\\
+    B&::=a[A]
+\end{align*}
+
+\lstinputlisting {4-2-3.py}
+
+\end{document}
