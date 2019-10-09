@@ -262,12 +262,14 @@ $$f(n) = O(n)$$
     T(n) = 
     \begin{cases}
         n &, n\perp 2 \\
-        4T(n/2) + 1 &, \text{else}
+        3T(n/2) + 1 &, \text{else}
     \end{cases}
 \end{equation*}
 
+值得注意的是，由于短路求值的特性，递归方法中的第4行最多执行三个，因此在时间复杂度中的系数是$3$。
+
 由主方法，可以知道
-$$T(n) = O(qk^2)$$
+$$T(n) = O(3^kq)$$
 
 \section{}
 \subsection*{算法思路}
@@ -278,7 +280,7 @@ $$S[i]=\Sigma[\text{lowbit}(i)+1]$$
 （注意，这里用$\Sigma[1]$指代$a$，用$\Sigma[2]$指代$b$，以此类推）。同样的，定义highbit$(i)$为小于等于$i$的最大的$2$的整次幂，即$i$的二进制表示中的最高位的$1$。那么$p(l, r)$即是$l\leq x\leq r$的所有$x$中，lowbit值最大的那一个，即：
 $$p(l, r) = \mathop{\arg\max}_{l\leq x\leq r}{\{\text{lowbit}(x)\}}$$
 可以观察出，
-$$p(l, r) = \Sigma[\text{highbit}(l\oplus r)]$$
+$$p(l, r) = \Sigma[\text{highbit}((l-1)\oplus r)]$$
 其中$\oplus$表示按位异或。
 
 然后我们讨论$S$串的自相似性。对于任意的$x$，只要$\text{lowbit}(x) > p(l, r)$，就有
@@ -295,13 +297,13 @@ $$S[l..r] = S[l+x..r+x]$$
 
 \subsubsection*{伪代码}
 \begin{algorithm}
-    \caption{判断字符串等价}
+    \caption{求最长公共子串}
     \begin{algorithmic}[1]
         \Require $l_1, r_1, l_2, r_2$，表示所求的两个区间范围
         \Ensure 最长公共子串的长度
         \Function {Lcs}{$l_1, r_1, l_2, r_2$}
-            \State $p_1 \gets$highbit$(l_1\oplus r_1)$
-            \State $p_2 \gets$highbit$(l_2\oplus r_2)$
+            \State $p_1 \gets$highbit$((l_1-1)\oplus r_1)$
+            \State $p_2 \gets$highbit$((l_2-1)\oplus r_2)$
             \State $l_1 \gets l_1 \mod 2p_1,\ r_1\gets r_1\mod 2p_1$
             \State $l_2 \gets l_2 \mod 2p_2,\ r_2\gets r_2\mod 2p_2$
             \If{$\Sigma[p_1] > \Sigma[p_2]$}

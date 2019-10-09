@@ -1,0 +1,152 @@
+\documentclass[UTF8]{ctexart}
+\usepackage{amsmath,amssymb}
+\usepackage{fancyhdr}
+\usepackage{amsmath,bm}
+\usepackage{mathrsfs}
+\usepackage{ntheorem}
+\usepackage{graphicx}
+\usepackage{subfigure}
+\usepackage[top=2cm, bottom=2cm, left=2cm, right=2cm]{geometry}  
+\usepackage{algorithm}  
+\usepackage{algorithmicx}  
+\usepackage{algpseudocode}
+\usepackage{multirow}
+\usepackage{tikz}
+\usepackage{listings}
+\usepackage{xcolor}
+\usetikzlibrary{automata, positioning, arrows}
+\tikzset{
+    ->,
+    >=stealth,
+    node distance = 3cm,
+    every state/.style={thick, fill=gray!10},
+    initial text=$ $
+}
+\lstset{numbers=left, %设置行号位置
+        numberstyle=\tiny, %设置行号大小
+        keywordstyle=\color{blue}, %设置关键字颜色
+        commentstyle=\color[cmyk]{1,0,1,0}, %设置注释颜色
+        frame=single, %设置边框格式
+        escapeinside=``, %逃逸字符(1左面的键)，用于显示中文
+        %breaklines, %自动折行
+        extendedchars=false, %解决代码跨页时，章节标题，页眉等汉字不显示的问题
+        xleftmargin=2em,xrightmargin=2em, aboveskip=1em, %设置边距
+        tabsize=4, %设置tab空格数
+        showspaces=false %不显示空格
+    }
+\floatname{algorithm}{算法}  
+\renewcommand{\algorithmicrequire}{\textbf{输入:}}  
+\renewcommand{\algorithmicensure}{\textbf{输出:}}  
+
+\theorembodyfont{\normalfont\rm\CJKfamily{song}}
+%\theoremstyle{break}
+\newtheorem{theorem}{定理}
+\newtheorem{lemma}{引理}
+\newtheorem{proposition}{命题}
+\newtheorem*{proof}{证}[section]
+\newtheorem*{solution}{解}[section]
+\title{符号表作业}
+\author{丁元杰 17231164}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section*{5.3}
+符号表参见：
+\begin{table}[htbp!]
+    \centering
+    \begin{tabular}{|c|c|c|}
+        \hline
+        名字&类型&维数\\
+        \hline
+        ENTRY-OFF&LOGICAL&\\
+        ENTRY-ON&LOGICAL&\\
+        I&INTEGER&\\
+        J&INTEGER&\\
+        K&INTEGER&\\
+        MIN-VAL-IND&INTEGER&20\\
+        LAST1&INTEGER&\\
+        LIST-OF-NAMES&STRING&\\
+        VAL&REAL&20\\
+        X&REAL&\\
+        Y&REAL&\\
+        Z1&REAL&\\
+        Z2&REAL&\\
+        Z3&REAL&\\
+        \hline
+        
+    
+    \end{tabular}
+    
+\end{table}
+
+\section*{5.5}
+完整表参见\ref{1}：
+\begin{table}[htbp!]
+    \centering
+    \begin{tabular}{|c|c|c|}
+        \hline
+        编号&名字&属性\\
+        \hline
+        1&Z&-\\
+        2&Y&-\\
+        3&J&-\\
+        4&S&-\\
+        5&FLAG&-\\
+        6&Y&-\\
+        7&W&-\\
+        8&J&-\\
+        9&TEST1&-\\
+        10&TEST2&-\\
+        11&TEST3&-\\
+        \hline
+        
+    \end{tabular}
+    \caption{分程序表}
+    \label{1}
+\end{table}
+
+其中第3段程序即将结束时的栈是\ref{2}：
+
+\begin{table}[htbp!]
+    \centering
+    \begin{tabular}{|c|}
+        \hline
+        \\
+        6\\
+        5\\
+        4\\
+        3\\
+        2\\
+        1\\
+        \hline
+        
+    \end{tabular}
+    \caption{程序段3结束时的栈}
+    \label{2}
+\end{table}
+
+第4段程序结束时的栈是\ref{3}：
+
+\begin{table}[htbp!]
+    \centering
+    \begin{tabular}{|c|}
+        \hline
+        \\
+        11\\
+        10\\
+        9\\
+        8\\
+        7\\
+        3\\
+        2\\
+        1\\
+        \hline
+        
+    \end{tabular}
+    \caption{程序段4结束时的栈}
+    \label{3}
+\end{table}
+
+\end{document}
