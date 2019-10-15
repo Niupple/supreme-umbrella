@@ -1,0 +1,116 @@
+\documentclass[UTF8]{ctexart}
+\usepackage{amsmath,amssymb}
+\usepackage{fancyhdr}
+\usepackage{amsmath,bm}
+\usepackage{mathrsfs}
+\usepackage{ntheorem}
+\usepackage{graphicx}
+\usepackage{subfigure}
+\usepackage[top=2cm, bottom=2cm, left=2cm, right=2cm]{geometry}  
+\usepackage{algorithm}  
+\usepackage{algorithmicx}  
+\usepackage{algpseudocode}
+\usepackage{multirow}
+\usepackage{tikz}
+\usepackage{listings}
+\usepackage{xcolor}
+\usetikzlibrary{automata, positioning, arrows}
+\tikzset{
+    ->,
+    >=stealth,
+    node distance = 3cm,
+    every state/.style={thick, fill=gray!10},
+    initial text=$ $
+}
+\lstset{numbers=left, %设置行号位置
+        numberstyle=\tiny, %设置行号大小
+        keywordstyle=\color{blue}, %设置关键字颜色
+        commentstyle=\color[cmyk]{1,0,1,0}, %设置注释颜色
+        frame=single, %设置边框格式
+        escapeinside=``, %逃逸字符(1左面的键)，用于显示中文
+        %breaklines, %自动折行
+        extendedchars=false, %解决代码跨页时，章节标题，页眉等汉字不显示的问题
+        xleftmargin=2em,xrightmargin=2em, aboveskip=1em, %设置边距
+        tabsize=4, %设置tab空格数
+        showspaces=false %不显示空格
+    }
+\floatname{algorithm}{算法}  
+\renewcommand{\algorithmicrequire}{\textbf{输入:}}  
+\renewcommand{\algorithmicensure}{\textbf{输出:}}  
+
+\theorembodyfont{\normalfont\rm\CJKfamily{song}}
+%\theoremstyle{break}
+\newtheorem{theorem}{定理}
+\newtheorem{lemma}{引理}
+\newtheorem{proposition}{命题}
+\newtheorem*{proof}{证}[section]
+\newtheorem*{solution}{解}[section]
+\title{中间表示法 作业}
+\author{丁元杰 17231164}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section*{7.1}
+表示
+X Y 2 + = label1 BZ Z X :=  label2 BR Z Y 1 + :=
+
+\section*{7.2}
+\subsection*{三元表达式}
+\begin{align*}
+    \textcircled{1}: & +, B, C \\
+    \textcircled{2}: & \uparrow, \textcircled{1}, E\\
+    \textcircled{3}: & +, B, C \\
+    \textcircled{4}: & *, \textcircled{3}, F\\
+    \textcircled{5}: & +, \textcircled{3}, \textcircled{4}\\
+    \textcircled{6}: & :=, A, \textcircled{5}
+\end{align*}
+
+\subsection*{间接三元式}
+
+三元式：
+\begin{align*}
+    \textcircled{1}: & +, B, C \\
+    \textcircled{2}: & \uparrow, \textcircled{1}, E\\
+    \textcircled{3}: & *, \textcircled{1}, F\\
+    \textcircled{4}: & +, \textcircled{1}, \textcircled{3}\\
+    \textcircled{5}: & :=, A, \textcircled{4}
+\end{align*}
+
+操作：
+\begin{align*}
+    1. \textcircled{1} \\
+    2. \textcircled{2} \\
+    3. \textcircled{1} \\
+    4. \textcircled{3} \\
+    5. \textcircled{4} \\
+    6. \textcircled{5} \\
+\end{align*}
+
+\subsection*{四元式}
+
+\begin{align*}
+    +, B, C, T_1 \\
+    \uparrow, T_1, E, T_2 \\
+    *, T_1, F, T_3 \\
+    +, T_3, T_2, A 
+\end{align*}
+
+\section*{7.3}
+
+四元式：
+
+①
+\begin{align*}
+    +, A, 1, T_1 \\
+    *=, B, 0, T_1
+\end{align*}
+
+②
+\begin{align*}
+    [], A, 1, T_1 \\
+    :=, T_1, 0, B
+\end{align*}
+
+\end{document}
