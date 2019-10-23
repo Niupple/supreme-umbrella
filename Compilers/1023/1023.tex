@@ -1,0 +1,84 @@
+\documentclass[UTF8]{ctexart}
+\usepackage{amsmath,amssymb}
+\usepackage{fancyhdr}
+\usepackage{amsmath,bm}
+\usepackage{mathrsfs}
+\usepackage{ntheorem}
+\usepackage{graphicx}
+\usepackage{subfigure}
+\usepackage[top=2cm, bottom=2cm, left=2cm, right=2cm]{geometry}  
+\usepackage{algorithm}  
+\usepackage{algorithmicx}  
+\usepackage{algpseudocode}
+\usepackage{multirow}
+\usepackage{tikz}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{syntax}
+\usetikzlibrary{automata, positioning, arrows}
+\tikzset{
+    ->,
+    >=stealth,
+    node distance = 3cm,
+    every state/.style={thick, fill=gray!10},
+    initial text=$ $
+}
+\lstset{numbers=left, %设置行号位置
+        numberstyle=\tiny, %设置行号大小
+        keywordstyle=\color{blue}, %设置关键字颜色
+        commentstyle=\color[cmyk]{1,0,1,0}, %设置注释颜色
+        frame=single, %设置边框格式
+        escapeinside=``, %逃逸字符(1左面的键)，用于显示中文
+        %breaklines, %自动折行
+        extendedchars=false, %解决代码跨页时，章节标题，页眉等汉字不显示的问题
+        xleftmargin=2em,xrightmargin=2em, aboveskip=1em, %设置边距
+        tabsize=4, %设置tab空格数
+        showspaces=false %不显示空格
+    }
+\setlength{\grammarparsep}{10pt plus 1pt minus 1pt} % increase separation between rules
+\setlength{\grammarindent}{20em} % increase separation between LHS/RHS 
+\floatname{algorithm}{算法}  
+\renewcommand{\algorithmicrequire}{\textbf{输入:}}  
+\renewcommand{\algorithmicensure}{\textbf{输出:}}  
+
+\theorembodyfont{\normalfont\rm\CJKfamily{song}}
+%\theoremstyle{break}
+\newtheorem{theorem}{定理}
+\newtheorem{lemma}{引理}
+\newtheorem{proposition}{命题}
+\newtheorem*{proof}{证}[section]
+\newtheorem*{solution}{解}[section]
+\title{Struct属性翻译文法作业}
+\author{丁元杰 17231164}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\paragraph*{Struct的文法}
+
+\begin{grammar}
+
+    <struct> ::= `struct' `{' <body> `}' `;'
+
+    <body> ::= <declaration> | <declaration> <body>
+
+    <declaration> ::= <type> <identifier list>
+
+    <identifier list> ::= <identifier> `;' | <identifier> `,' <identifier list>
+
+    <identifier> ::= IDENTFIER
+    
+\end{grammar}
+
+\paragraph*{Struct的属性翻译文法}
+
+\begin{align*}
+    \langle \text{struct}\rangle _{\uparrow s_1 \downarrow t_2} &::= \text{`struct'} \text{`\{'} \langle \text{body}\rangle _{\uparrow s_2 \downarrow t_2} \text{`\}'} \text{`;'} \\
+    \langle \text{body}\rangle _{\uparrow s_1 \downarrow t_1} &::= \langle \text{declaration}\rangle _{\uparrow new \downarrow old} | \langle \text{declaration}\rangle _{\uparrow new \downarrow old} \langle \text{body}\rangle _{\uparrow s_2 \downarrow t_2} \\
+    \langle \text{declaration}\rangle _{\uparrow new \downarrow old} &::= \langle \text{type}\rangle _{\uparrow Type} \langle \text{identifier list}\rangle  _{\uparrow vars} @f_{\uparrow new \downarrow old, vars, Type} \\
+    \langle \text{identifier list}\rangle _{\uparrow vars} &::= \langle \text{identifier}\rangle _{\uparrow id} \text{`;'} @item2list_{\uparrow vars \downarrow id} | \langle \text{identifier}\rangle _{\uparrow id} \text{`,'} \langle \text{identifier list}\rangle _{\uparrow vars_old} @addlist_{\uparrow vars \downarrow id} \\
+    \langle \text{identifier}\rangle _{\uparrow id} &::= \text{IDENTFIER} @2id_{\uparrow id}
+\end{align*}
+
+\end{document}
