@@ -31,234 +31,383 @@
 
 \section{最长回文子序列问题}
     \subsection*{算法思路}
+    对原序列$S$和原序列的逆序列$S^R$求出最长公共子序列（LCS），可以求得一个长度为$m$的串$T[1..m]$。现在断言$m$即为原问题（LPS）所求序列的长度，且由串$T[1..m/2]+(T[m/2+1..m])^R$拼接而成的新串是原问题的一个解。由此即可将LPS转化为一个等价的LCS问题，由现有的$O(n^2)$的LCS算法求解得到。
 
+    其中，序列$S[1..n]$的逆序列$S^R[1..n]$定义为
+    $$S^R[i] = S[n+1-i],\ \forall 1\leq i \leq n$$
+
+    下面给出上面所给断言的形式化描述和严格证明。
+
+    \begin{proposition}
+        $S[1..n]$与$S^R[1..n]$可求得一个最长公共子序列，即存在一个指标序列$a[1..m]$，$b[1..m]$，使得$S[a[i]]=S^R[b[i]],\ \forall 1\leq i \leq m$。并且存在另一个$S$的指标序列$c[1..m]$，使得$S[c[i]] = S[c[m+1-i]],\ \forall 1 \leq i \leq m$，并且有
+        \begin{equation*}
+            c[i] = \begin{cases}
+                a[i] &, \text{if $i \leq m/2$} \\
+                n+1-b[m+1-i] &, \text{if $i \geq m/2+1$}
+            \end{cases}
+        \end{equation*}
+        并且由此指标集限定的$S$的子序列是它的一个最长回文子序列。
+    \end{proposition}
+
+    \begin{proof}
+        先证明这个串是一个回文串。可知
+        \begin{equation*}
+            c[i] = \begin{cases}
+                a[i] &, \text{if $i \leq m/2$} \\
+                n+1-b[m+1-i] &, \text{if $i \geq m/2+1$}
+            \end{cases}
+        \end{equation*}
+        那么，$\forall 1 \leq i \leq m/2$
+        \begin{align*}
+            S[c[m+1-i]] 
+            &=S[n+1-b[m+1-(m+1-i)]] \\
+            &=S[n+1-b[i]]\\
+            &=S^R[b[i]]\\
+            &=S[a[i]]\\
+            &=S[c[i]]
+        \end{align*}
+        因此，$S[c[i]]$必然是一个回文子序列。
+
+        再证明这个回文串是最长的。如果存在一个更长的子序列，则表示存在一个指标序列$c'[1..m']$，使得$m'>m$且$S[c'[i]] = S[c'[m'+1-i]], \forall 1 \leq i \leq m'$。那么可以构造$a'[i] = c'[i]$，以及$b'[i] = n+1-c'[m'+1-i]$，那么
+        \begin{align*}
+            S^R[b'[i]]
+            &=S^R[n+1-c'[m'+1-i]] \\
+            &=S[c'[m'+1-i]] \\
+            &=S[c'[i]] \\
+            &=S[a[i]]
+        \end{align*}
+        使得$S[a'[i]]=S^R[b'[i]],\ \forall 1 \leq i \leq m'$。我们成功构造了一个长$m'$的序列，使得其是$S$和$S^R$的公共子序列，此与原假设中关于公共子序列的最长性质矛盾。
+    \end{proof}
+
+    由于这是一个构造性的证明，在证明的同时给出了构造的方案，因此可以方便地由求LCS（求解方案）的算法直接得到LPS（求解方案）的算法。
+
+    \subsection*{伪代码}
+    参见算法\ref{algo1}
+
+    \begin{algorithm}
+        \caption{求序列$S$的最长回文子序列}
+        \begin{algorithmic}[1]
+            \Require $S[1..n]$序列
+            \Ensure 原序列的最长回文子序列$T$
+            \Function {LPS}{$S[1..n]$}
+                \State $S' \gets$ REVERSE($S$)
+                \State $f[1..n][1..n], g[1..n][1..n]$ 是两个数组
+                \State $f[0][0] \gets 0, g[0][0] \gets -1$
+                \State $ans = 0$
+                \State $anp = (-1, -1)$
+                \For{$i = 1\to n$}
+                    \For{$j = 1\to n$}
+                        \If{$S[i] = S'[j]$}
+                            \State $f[i][j] \gets f[i-1][j-1] + 1$
+                            \State $g[i][j] \gets (i-1, j-1)$
+                        \ElsIf{$f[i-1][j] > \max{\{f[i-1][j-1], f[i][j-1]\}}$}
+                            \State $f[i][j] \gets f[i-1][j]$
+                            \State $g[i][j] \gets (i-1, j)$
+                        \ElsIf{$f[i-1][j-1] > \max{\{f[i-1][j], f[i][j-1]\}}$}
+                            \State $f[i][j] \gets f[i-1][j-1]$
+                            \State $g[i][j] \gets (i-1, j-1)$
+                        \ElsIf{$f[i][j-1] > \max{\{f[i-1][j], f[i-1][j-1]\}}$}
+                            \State $f[i][j] \gets f[i][j-1]$
+                            \State $g[i][j] \gets (i, j-1)$
+                        \EndIf
+
+                        \If{$f[i][j] > ans$}
+                            \State $ans \gets f[i][j]$
+                            \State $anp \gets (i, j)$
+                        \EndIf
+                    \EndFor
+                \EndFor
+                \State $T \gets$ GET\_ANSWER($S, g, ansp$)
+                \State \Return $T$
+            \EndFunction
     
+            \Function {GET\_ANSWER}{$S[1..n], g[1..n][1..n], ansp$}
+                \State $T \gets$ `'
+                \State $nowp \gets ansp$
+                \While{$nowp \neq (-1, -1)$}
+                    \State $T += S[nowp.first]$
+                    \State $nowp \gets g[nowp.first][nowp.second]$
+                \EndWhile
+                \State \Return REVERSE($T$)
+            \EndFunction
+        \end{algorithmic}
+        \label{algo1}
+    \end{algorithm}
 
-\section{} %2
-\subsection*{算法思路}
-先考虑另一个问题KTH-ELEMENT($A, k$)，表示求解数组$A$中第$k$小的元素，并用这个元素对原序列进行划分。设$A$排序后的数组为$A'$，那么$A[1..n]$中的第$k$小元素就被定义为$A'[k]$。
+\section{餐厅选址问题} %2
+    \subsection*{算法思路及复杂度分析}
+        \paragraph*{思路}
+        考虑动态规划的思想，设$f[i]$表示所选的所有地址中，位置最大为$m_i$的最大收益。设这个局部的最大收益的方案为一个集合$S_i\subseteq [1, n]$，是候选位置下标集的子集。则由假设，
+        $$i = \max{S_i}$$
+        并且根据题目中对于任意两个餐厅的距离限制，可以得出：
+        $$m_i > \max_{i\neq j\in S_i}{m_j} + k$$
+        那么我们可以给出转移方程：
 
-对于 KTH-ELEMENT 问题，需要使用到快速排序中的函数 PARTITION。在 KTH-ELEMENT($A[1..n], k$) 问题中，随机从$A[1..n]$中选取一个元素$A[p]$作为 pivot，设经过PARTITION之后的数组为$A'$，pivot 在$A'$中的下标为$p'$（即$A[p]$是$A$中的第$p'$小），那么
-\begin{enumerate}
-    \item 如果$p' \geq k$，原问题化为子问题KTH-ELEMENT($A'[1..p'], k$)
-    \item 如果$p' < k$，原问题化为子问题KTH-ELEMENT($A'[p'+1..n], k-p'$)
-\end{enumerate}
+        $$f[i] = \max_{j < i \& m_j+k \leq m_i}{f[j]} + p_i$$
 
-设原问题为ROUGHLY-SORT($A, k$)，表示将$A$数组化为$k$重有序数组。那么可以通过不断地对原数组进行 KTH-ELEMENT($A, n/2$)，直到长度小于$n/k$。或者形式地讲，解决 ROUGHLY-SORT($A[1..n], k$) 问题，
-\begin{enumerate}
-    \item 如果$k = 1$，那么$A[1..n]$即是所求
-    \item 否则先对序列进行 KTH-ELEMENT($A[1..n], n/2$)，然后分别进行 ROUGHLY-SORT($A[1..n/2], k/2$)，以及 ROUGHLY-SORT($A[n/2+1..n], k/2$)
-\end{enumerate}
+        其中如果$\max$所应用的集合为空，那么$\max$得到$0$的结果。
 
-\subsection*{伪代码}
-\begin{algorithm}
-    \caption{将序列排成$k$重有序}
-    \begin{algorithmic}[1]
-        \Require $A$数组，$k$有序数组的重数
-        \Ensure 排序后的数组$A$
-        \Function {KthElement}{$A, k$}
-            \State randomly choose a number $p \in [1, n]$
-            \State call Partition($A, p$), and set the new location of $A[p]$ to $p'$
-            \If{$p' \geq k$}
-                \State KthElement($A[1..p'], k$)
-            \Else
-                \State KthElement($A[p'+1..n], k-p'$)
-            \EndIf
-        \EndFunction
+        最终所求的答案，就是
 
-        \Function {RoughlySort}{$A[1..n], k$}
-            \If{$k = 1$}
-                \State \Return
-            \Else
-                \State call KthElement($A[1..n], n/2$)
-                \State call RoughlySort($A[1..n/2], k/2$)
-                \State call RoughlySort($A[n/2+1..1], k/2$)
-            \EndIf
-        \EndFunction
-    \end{algorithmic}
-\end{algorithm}
+        $$ans=\max_i{f[i]}$$
 
-\subsection*{复杂度分析}
-首先分析KTH-ELEMENT($A[1..n], k$)的复杂度$f(n)$。声明$f(n)$的期望复杂度为：
-$$f(n) = O(n)$$
+        这个递推的思路是，如果存在某一个局部的最优解，那么这个局部的最优解必定存在位置最大的地址。去掉这一个位置最大的地址后，剩下的子集必然是满足基本限制的最优解（否则，就可以通过调整获得更优的解法）。
 
-现用归纳法证明当$n$足够大时，$f(n) < 6n$。显然地有
-$$f(1) = 1 < 6$$
-假设对$\forall i < n$，都有
-$$f(i) < 6i$$
-设选取到用于 PARTITION 的 pivot 元素是$A[p]$，那么$f(n)$由这两部分组成：
-\begin{enumerate}
-    \item $n$的时间用于 PARTITION 操作，此时间与$p$的选取无关
-    \item 以$\frac{1}{n}$的概率选到某个元素$p$作 pivot 之后，需要花费 $f(p)$或$f(n-p)$的时间进行后面的 KTH-ELEMENT 操作。更加明确地讲，是$\max\{p, n-p+1\}$
-\end{enumerate}
-所以可以看出
-\begin{align*}
-    f(n) 
-    &= n + \frac{1}{n}\sum_{i=1}^{n}{f\left(\max\{n-i+1, i\}\right)} \\   
-    &= n + \frac{2}{n}\sum_{i=1}^{n/2}{f\left(\frac{n}{2}+i-1\right)} \\
-    &< n + \frac{2}{n}\times 6\times \sum_{i=1}^{n/2}{\frac{n}{2}+i-1} \\
-    &= n + \frac{12}{n}\times\left(\frac{n^2}{4}-\frac{n}{2}+\frac{n^2+2}{8}\right) \\
-    &= n + 6\times\frac{3n-4+\frac{2}{n}}{4} \\
-    &< \frac{11}{2}n-6+\frac{3}{n} \\
-    &= 5.5n + o(n) \\
-    &< 6n = O(n)
-\end{align*}
-所以可以得出结论
-$$f(n) = O(n)$$
+        \paragraph*{朴素实现的复杂度}
+        接下来分析一下这个动态规划的朴素实现所需的时间复杂度。可以看出，总计有$f[1..n]$，共$n$个状态。我们的算法顺序求解$1..n$的状态。其中为了求得$f[i]$的答案，需要优先遍历所有${j: j < i}$，检查其是否满足基本限制$m_j+k\leq m_i$，以及最优性。所以$f[i]$所花的时间是$i$。
 
-其次分析ROUGHLY-SORT的时间复杂度$T(n, k)$，可以发现递归式：
-\begin{equation*}
-    T(n, k) = 
-    \begin{cases}
-        1 &, k = 1 \\
-        2T(n/2, k/2) + f(n) &, \text{else}
-    \end{cases}
-\end{equation*}
-其中$f(n) = O(n)$。所以，可以得出，$T(n, k) = O(n\log k)$。
+        那么最后，我们的算法时间复杂度是：
+        \begin{align*}
+            T(n) 
+            &= \sum_{i=1}^{n}{i} \\
+            &= \frac{n(n+1)}{2} \\
+            &= O(n^2)
+        \end{align*}
 
-\section{} %3
-\subsection*{算法思路}
-考虑$A[1..n]$序列的差分序列$B[1..n-1]$，满足条件$B[i] = A[i+1] - A[i]$。 \\
-如果$A[i^*]$是$A$序列中的极大值，则必有$B[i^*-1] > 0$且$B[i^*] < 0$。 \\
-此时可以考虑在$B$序列上进行二分查找，设初始$l_0=1, r_0=n-1$，可知$B[l_0]<0$，而$B[r_0]>0$。 \\
-接下来进行迭代，在第$k$次迭代中，维护循环不变性$l_k < r_k$，以及$B[l_k]B[r_k] < 0$：
-\begin{enumerate}
-    \item 如果$l_k+1=r_k$，那么算法结束，$A[r_k]$就是所求的局部最大值。
-    \item 记$m_k = \left\lfloor\frac{l_k+r_k}{2}\right\rfloor$，显然有$l_k < m_k < r_k$，且以下两个条件之一成立：
+        所以朴素算法的时间复杂度是$O(n^2)$的。
+
+        \paragraph*{第一次优化}
+        $O(n^2)$的复杂度不尽如人意，原因是算法虽然是单调无后效性地计算$f[i]$，较小的$f[j]$却会被反复查询，用于求解最优性。为了解决这个问题，可以引入另一个数组$g[i]$，表示$f[i]$的前缀最大值，即：
+        $$g[i] = \max_{j\leq i}{g[i]}$$
+        显然，$g[i]$数组随着$i$的增大非严格单调递增，那么只要我们能快速确定$i$状态可以转移的最大前驱$j^*$，就可以直接从$g[j^*]$得到我们需要的前驱状态。即：
+        $$j^* = \max_{j\leq i \& m_j+k \leq m_i}{j}$$
+        以及
+        $$f[i] = g[j^*] + p_i$$
+        其中，由于$m_j$的单调性，$j^*$可以通过二分查找，使用$O(\log i)$的时间求得。因此，此优化的最终复杂度变为：
+        \begin{align*}
+            T(n)
+            &= \sum_{i=1}^{n}{\log i} \\
+            &= \log{n!} \\
+            &\approx n\log n\\
+            &= O(n\log n)
+        \end{align*}
+
+        \paragraph*{最终优化}
+        使用双指针法优化（two pointers）。
+
+        记对状态$i$求出的$j^*$为$j_i$，那么由定义式：
+        $$j_i = \max_{j\leq i \& m_j+k \leq m_i}{j}$$
+        可以看出$j_i \leq j_{i+1}$，即$j_i$随$i$满足单调性（非严格的）。既然此单调性存在，就可以由$j_i$开始，向后依次枚举，直到$j_{i+l+1}$不再满足性质$m_{j_{i}+l+1} \leq m_i$时，取$j_{i+1} \gets j_{i}+l$，即可得到$j_{i+1}$。
+
+        虽然此方法把二分查找更换为了线性扫描，但是由于$j_{i}$单调递增，总计的尝试次数不会超过$n$，因此无论左指针$j_i$还是右指针$i$，都只会为求解贡献$n$次计算。此方案的时间复杂度为$O(n)$
+
+    \subsection*{伪代码}
+    参见算法\ref{algo2}。
+    \begin{algorithm}
+        \caption{求解此问题}
+        \begin{algorithmic}[1]
+            \Require $m[1..n], p[1..n]$数组，$k$参数
+            \Ensure 最优方案的值$p_m$
+            \Function {BestPlaces}{$m[1..n], p[1..n], k$}
+                \State $f[1..n]\gets 0$
+                \State $g[0..n]\gets 0$
+                \State $l \gets 0$
+                \State $r \gets 1$
+                \While{$r \leq n$}
+                    \While{$l+1 < r \&\& m[l+1]+k\leq m[r]$}
+                        \State $l\gets l+1$
+                    \EndWhile
+                    \State $f[r] \gets g[l]+p[r]$
+                    \State $g[r] \gets \max{\{f[r], g[r-1]\}}$
+                    \State $r\gets r+1$
+                \EndWhile
+                \State \Return $g[n]$
+            \EndFunction
+        \end{algorithmic}
+        \label{algo2}
+    \end{algorithm}
+
+\section{球队组建问题} %3
+    \subsection*{算法思路}
+        设计动态规划状态$f[i][j]$，其中$1\leq i \leq n$，且$j \in \{0, 1, 2\}$，表示在前$i$列的所有方案中，最后一列的两人选择方案为$j$时的最优解。在这里，$j$的三个取值分别表示其对应二进制数的状态，对应二进制数位为0，表示不选择该人；反之为选择该人。
+
+        转移方向为$f[i][j]$到$f[i+1][j']$，合法的转移参见表
+        \begin{table}
+            \centering
+            \caption{状态转移表格}
+            \label{table1}
+            \begin{tabular}{|c|c|c|c|}
+                & 00 & 01 & 10 \\
+                \hline
+                00 & 可 & 可 & 可 \\
+                \hline
+                01 & 可 & 不可 & 可 \\
+                \hline
+                10 & 可 & 可 & 不可 \\
+                \hline
+            \end{tabular}
+        \end{table}
+
+        在合理的转移方向之间找到最优的转移，答案就在
+        $$ans = \max_{j\in\{0, 1, 2\}}{f[n][j]}$$
+
+    \subsection*{伪代码}
+        \begin{algorithm}
+            \caption{求解此问题}
+            \begin{algorithmic}[1]
+                \Require $h[2][1..n]$
+                \Ensure 最优方案的值$ans$
+                \Function {BestTeam}{$h[2][1..n]$}
+                    \State $f[0..n][3]$
+                    \State $f[0][0] \gets 0$
+                    \State $f[0][1] \gets 0$
+                    \State $f[0][2] \gets 0$
+                    \For{$i=1\to n$}
+                        \State $f[i][0] \gets \max{\{f[i-1][0], f[i-1][1], f[i-1][2]\}}$
+                        \State $f[i][1] \gets \max{\{f[i-1][0], f[i-1][2]\}} + h[1][i]$
+                        \State $f[i][2] \gets \max{\{f[i-1][0], f[i-1][1]\}} + h[2][i]$
+                    \EndFor
+                    \State \Return $\max{\{f[n][0], f[n][1], f[n][2]\}}$
+                \EndFunction
+            \end{algorithmic}
+            \label{algo2}
+        \end{algorithm}
+
+    \subsection*{复杂度分析}
+        可以从伪代码中看出，在使用 Map 作为有序关联数组时，可以使用基于平衡二叉树实现的关联数组，从而做到单次$O(\log n)$的访问和修改复杂度。上面有$n$次访问，因此因为关联数组带来的复杂度有$O(n\log n)$。
+
+        后面的DP部分，由于循环只对数组进行了$O(n)$次访问，因此总共复杂度为$O(n)$
+
+        综上所述，算法的总体复杂度为$O(n \log n)$
+
+\section{数组排序问题} %4
+    \subsection*{性质观察}
+        在正式解决这个问题之前，需要先观察清楚几个问题的固有性质。
+        
+        \paragraph*{每种数最多只被操作一次}
+            如果一个数被操作了两次，那么第一次的操作不会对之后的结果产生任何效果。因为操作的聚集效果和移动效果都具有覆盖的性质，无论第一次操作与否，第二次都可以产生相同的效果。
+
+        \paragraph*{操作用于头插和尾插的数，在时间上具有单调性}
+            既然每种数只会被操作一次，操作可以分为头插和尾插，那么可以把所有数分为头插和尾插两类。以头插举例，在所有对数进行头插的操作中，操作的数必然随着时间单调减小，否则不可能造成最后的有序场面；尾插同理。
+
+        \paragraph*{操作用于头插和尾插的数，在值上具有单调性}
+            这是在说，如果$x$被用于头插，那么所有满足条件$y<x$的$y$都会被应用头插；如果$x$被用于尾插，那么所有大于$x$的$y$都会被用于尾插。由此，如果将所有的整数预先排序去重，那么它们在整个排序的过程中被应用的操作将呈现
+            $$head, head, \dots, non, \dots, tail, \dots$$
+            的模样
+
+        \paragraph*{要想获得最少的操作次数，就要找出最多的不用操作的数}
+            由上面的几条性质，可以综合得到最后的一条。
+    
+    \subsection*{算法思路}
+        有了基本的性质，就可以设计找出最多不用操作的数的算法了。设两个关联数组$l, r:X\to I$其中$X$是输入序列的元素集合，$I$是原序列的指标集。其中$l[x]$表示在所有的$x$中，下标最小的那一个下标；$r[x]$则表示所有序列中的$x$中，下标最大的那一个下标。
+
+        设$A$是最终求得的，不用操作的数的集合，那么可以看出$A$满足几条性质：
+
         \begin{enumerate}
-            \item 如果$B[l_k]B[m_k] < 0$，则$l_{k+1} = l_k,\ r_{k+1} = m_k$
-            \item 如果$B[r_k]B[m_k] < 0$，则$l_{k+1} = m_k,\ r_{k+1} = r_k$
+            \item $\forall x\in X: \min{A} \leq x \leq \max{A} \Rightarrow x\in A$
+            \item $\forall x, y \in A: x < y \Rightarrow r[x] < l[y]$
         \end{enumerate}
-\end{enumerate}
 
-\subsection*{伪代码}
-\begin{algorithm}
-    \caption{求局部最大值}
-    \begin{algorithmic}[1]
-        \Require $A$数组，$n$数组长度
-        \Ensure 局部最大值在$A$中的下标
-        \Function {LocalMaximum}{$A, n$}
-            \State $l\gets 1,\ r\gets n-1$
-            \While{$l < r$}
-                \If{$l+1 = r$}
-                    \State \Return $r$
-                \Else
-                    \State $m\gets \left\lfloor\frac{l+r}{2}\right\rfloor$
-                    \State $b_l \gets A[l+1]-A[l]$
-                    \State $b_m \gets A[m+1]-A[m]$
-                    \If{$b_l * b_m < 0$}
-                        \State $r \gets m$
-                    \Else
-                        \State $l \gets m$
-                    \EndIf
-                \EndIf
-            \EndWhile
-        \EndFunction
-    \end{algorithmic}
-\end{algorithm}
+        其中，第1条性质说明了不操作的数必然是``连续''的一段，这里的连续并不是自然数的连续的含义，而是其中不含有任何其他的$X$的元素的含义，也即在$X$的范围中连续。
 
-\subsection*{复杂度分析}
-设算法时间复杂度为$T(n)$，其中$n$为$A$数组长度。那么很明显的有：
-\begin{equation*}
-    T(n) = 
-    \begin{cases}
-        1 &, n=1 \\
-        T(n/2) + 1 &, \text{else}
-    \end{cases}
-\end{equation*}
+        我们再引入一个映射$\sigma: X \to [0..|X|-1]$和它的逆映射$\tau: [0..|X|-1] \to X$，其中$\sigma(x)$表示在$X$中小于$x$的元素数量。有了这个映射，上段所描述的$x, y$在$X$的范围中连续，就可以转化为$\sigma(x), \sigma(y)$在$\mathbb{N}$的范围中连续。
 
-显然，$T(n) = O(\log n)$
+        有了这些记号，我们就能够方便地描述我们的工作。最终所期望的结果，是找出$[0..|X|-1]=:M$的一个最大的连续子集$A^*$，使得下面的性质成立：
+        $$\forall x, y \in A^*: r_{\tau(x)} < l_{\tau(y)}$$
 
-\section{}
-\subsection*{算法思路}
-递归比较字符串$A$和$B$的问题 EQUIV($A, B$) ，将$A$分为等长的$A_1$，$A_2$，将$B$分为$B_1$，$B_2$。如果 EQUIV($A_1, B_1$) \& EQUIV($A_2, B_2$) 或者 EQUIV($A_1, B_2$) \& EQUIV($A_2, B_1$) 成立，那么原问题成立，否则原问题不成立。
+        现在使用动态规划的思想解决问题，设$f[i]$表示以$i$结尾的$M$的子区间中，满足上述条件最长子区间长度。由此可以得到一个简略的状态转移函数：
 
-\subsection*{伪代码}
-\begin{algorithm}
-    \caption{判断字符串等价}
-    \begin{algorithmic}[1]
-        \Require $A$数组，$B$数组
-        \Ensure $A$和$B$是否等价
-        \Function {Equiv}{$A[1..n], B[1..n]$}
-            \If{$n$ is not multiple of $2$}
-                \State \Return $A=B$
-            \EndIf
-            \If{Equiv($A[1..n/2], B[1..n/2]$) and Equiv($A[n/2+1..n], B[n/2+1..n])$ or Equiv($A[1..n/2], B[n/2+1..1]$) and Equiv($A[n/2+1..n], B[1..n/2]$)}
-                \State \Return True
-            \Else
-                \State \Return False
-            \EndIf
-        \EndFunction
-    \end{algorithmic}
-\end{algorithm}
+        \begin{equation*}
+            f[i] = 
+            \begin{cases}
+                1 &, i=0 \\
+                1 &, r_{\tau({i-1})} > l_{\tau({i})} \\
+                f[i-1] + 1 &, r_{\tau({i-1})} < l_{\tau({i})}
+            \end{cases}
+        \end{equation*}
 
-\subsection*{复杂度分析}
-设$n=2^kq$，其中$q\perp 2$。那么原问题 EQUIV($A[1..n], B[1..n]$) 的时间复杂度$T(n)$存在递归式：
-\begin{equation*}
-    T(n) = 
-    \begin{cases}
-        n &, n\perp 2 \\
-        3T(n/2) + 1 &, \text{else}
-    \end{cases}
-\end{equation*}
+    \subsection*{伪代码}
+        参见算法\ref{algo4}
+        \begin{algorithm}
+            \caption{求解此问题}
+            \begin{algorithmic}[1]
+                \Require $A[1..n]$，
+                \Ensure 最优方案的值$ans$
+                \Function {MinOperation}{$A[1..n]$}
+                    \State $f[0..n-1]$
+                    \State $l \gets$ Map$\langle$int, int$\rangle$
+                    \State $r \gets$ Map$\langle$int, int$\rangle$
+                    \For{$i = 1\to n$}
+                        \State $l[A[i]]\gets \min{\{l[A[i]], i\}}$
+                        \State $r[A[i]]\gets \max{\{l[A[i]], i\}}$
+                    \EndFor
+                    \State $m \gets l.size()$
+                    \State $ll[0..m]$
+                    \State $rr[0..m]$
+                    \State $i \gets 0$
+                    \For{$x\in l$}
+                        \State $ll[i]\gets x$
+                        \State $i \gets i+1$
+                    \EndFor
+                    \State $i \gets 0$
+                    \For{$x\in r$}
+                        \State $rr[i]\gets x$
+                        \State $i \gets i+1$
+                    \EndFor
+                    \State $f[0] \gets 1$
+                    \State $ans \gets 0$
+                    \For{$i = 1\to m-1$}
+                        \If{$rr[i-1] < ll[i]$}
+                            \State $f[i] \gets f[i-1]+1$
+                        \Else
+                            \State $f[i] = 1$
+                        \EndIf
+                        \State $ans \gets \max{\{ans, f[i]\}}$
+                    \EndFor
+                    \State \Return $ans$
+                \EndFunction
+            \end{algorithmic}
+            \label{algo4}
+        \end{algorithm}
 
-值得注意的是，由于短路求值的特性，递归方法中的第4行最多执行三个，因此在时间复杂度中的系数是$3$。
+\section{能耗降低问题}
+    \subsection*{算法思路和复杂度分析}
+        在$k$小于所有字符串中1的个数时，我们无需将任何0变成1，因此期望每一次翻转都对答案有正向的贡献；反之，如果$k$太大，那么答案可以直接记为$k-\#1$。所以我们现在只考虑消除1的情形。
+        
+        考虑到每一个串在消除掉一定量$k$时，其产生的能耗是一定的。我们可以预处理出每一个串在消除$j$个1之后节省的能耗。如果第$i$个串有$s_i$个1，那么可以把这个串拆成$s_i$件物品，其中第$j$个物品表示第$i$个串去掉$j$个1之后，节省的能耗。这样，以去掉的1的个数为体积，$k$为容量，原问题被转化为了若干个类型的分组背包。
 
-由主方法，可以知道
-$$T(n) = O(3^kq)$$
+        由于分组背包有着完整的、已解决的实现，我们这里着重关注如何将每一个字符串拆成若干个类型相同的物品。
 
-\section{}
-\subsection*{算法思路}
-由于给出的序列结构具有高度的递归性，且构成一个二叉树。从$S$串的选取的任意子串$S[l..r]$，等价于从该二叉树中选取中序遍历排序在$[l..r]$范围内的全部结点。很明显，这些结点中深度最浅的结点是唯一的，对应到子串中，则表示字典序最大的字符是存在且唯一的，不妨将这个字符称作$l$到$r$的最大字符，记为$p(l, r)$，例如，$S[2..5]=baca$，那么$p(2, 5)=c$。
+        对于第$i$个字符串，可以抽取一个单调的指标序列$A_i$，并且有$s_i = |A_i|$。其中，$A_i$储存了$S_i$字符串的所有1出现位置的下标。现在用$w_{ij}$表示第$i$类的第$j$个物品的价值，含义是字符串$S_i$去掉$j$个1之后节省的能耗，其体积为$j$。根据定义
+        $$w_{ij} = w_{i0} - \max_{0 \leq k \leq j}{A_i[k+s_i-j]-A_i[k+1]+1}$$
+        不难看出，为了计算$w_{ij}$需要花费$O(m^2)$的时间。因此，为了初始化得到所有的物品，需要花费$O(nm^2)$的时间。
 
-其次，我们还可以用下标$i$推出$S[i]$这个字符的内容。如果定义lowbit$(i)$为$i$的最大的$2$的整数次幂的因子，即$i$的二进制表示中的最低为的$1$及其后面的$0$组成的二进制数。那么
-$$S[i]=\Sigma[\text{lowbit}(i)+1]$$
-（注意，这里用$\Sigma[1]$指代$a$，用$\Sigma[2]$指代$b$，以此类推）。同样的，定义highbit$(i)$为小于等于$i$的最大的$2$的整次幂，即$i$的二进制表示中的最高位的$1$。那么$p(l, r)$即是$l\leq x\leq r$的所有$x$中，lowbit值最大的那一个，即：
-$$p(l, r) = \mathop{\arg\max}_{l\leq x\leq r}{\{\text{lowbit}(x)\}}$$
-可以观察出，
-$$p(l, r) = \Sigma[\text{highbit}((l-1)\oplus r)]$$
-其中$\oplus$表示按位异或。
+        最后，我们得到了$n$组物品，其中每组物品最多$m$件，总容量为$k$，由分组背包的时间复杂度可以知道，用于动态规划的时间是$O(nmk)$。
 
-然后我们讨论$S$串的自相似性。对于任意的$x$，只要$\text{lowbit}(x) > p(l, r)$，就有
-$$S[l..r] = S[l+x..r+x]$$
+        综上，总体的时间复杂度
+        $$T(n, m, k) = O(nmk+nm^2)$$
 
-再次，我们尝试解决的最大公共子串问题，即是两个字符串的最大重合问题。在此例中，还可以转化为两个来源于同一棵二叉树的两个子部分的最大重叠问题。
-
-设我们的问题为LCS($l_1, r_1, l_2, r_2$)，表示求解$S[l_1..r_1]$和$S[l_2..r_2]$的最长公共子串。可以分情况讨论：
-
-\begin{itemize}
-    \item 如果$p(l_1, r_1)=p(l_2, r_2)$，那么可以将两个子区间平移，使得其最大字符重叠。平移之后两个子区间的最大重叠长度就是所求的最长公共子串的长度。
-    \item 如果$p(l_1, r_1) < p(l_2, r_2)$，那么仍然可以平移$[l_1..r_2]$，至$[l_1'..r_1']$中的最大字符与$[l_2, r_2]$中的最大字符两侧的第一个$p(l_1, r_1)$字符分别重合时，计算两次区间覆盖。较大者就是答案。
-\end{itemize}
-
-\subsubsection*{伪代码}
-\begin{algorithm}
-    \caption{求最长公共子串}
-    \begin{algorithmic}[1]
-        \Require $l_1, r_1, l_2, r_2$，表示所求的两个区间范围
-        \Ensure 最长公共子串的长度
-        \Function {Lcs}{$l_1, r_1, l_2, r_2$}
-            \State $p_1 \gets$highbit$((l_1-1)\oplus r_1)$
-            \State $p_2 \gets$highbit$((l_2-1)\oplus r_2)$
-            \State $l_1 \gets l_1 \mod 2p_1,\ r_1\gets r_1\mod 2p_1$
-            \State $l_2 \gets l_2 \mod 2p_2,\ r_2\gets r_2\mod 2p_2$
-            \If{$\Sigma[p_1] > \Sigma[p_2]$}
-                \State swap $[l_1, r_1]$ and $[l_2, r_2]$
-            \EndIf
-            \If{$p_1 = p_2$}
-                \State \Return Overlap($l_1, r_1, l_2, r_2$)
-            \Else
-                \State $\delta_1\gets p_2-2p_1$
-                \State $\delta_2\gets p_2+2p_1$
-                \State \Return Max(Overlap($l_1+\delta_1, r_1+\delta_1, l_2, r_2$), Overlap($l_1+\delta_2, r_1+\delta_2, l_2+\delta_2, r_2+\delta_2$))
-            \EndIf
-        \EndFunction
-    \end{algorithmic}
-\end{algorithm}
-
-\subsubsection*{复杂度}
-
-由于highbit$(x)$的操作复杂度为$O(\log x)$，所以原问题LCS($l_1, r_1, l_2, r_2$)的复杂度$T(l_1, r_1, l_2, r_2)$为：
-$$T(l_1, r_1, l_2, r_2)=O\left(\log\left(l_1\oplus r_1\right)+\log\left(l_2+\oplus r_2\right)\right)$$
+    \subsection*{伪代码}
+    参见算法\ref{algo5}
+    \begin{algorithm}
+        \caption{求解此问题}
+        \begin{algorithmic}[1]
+            \Require $S[1..n][1..m], k$，
+            \Ensure 最优方案的值$ans$
+            \Function {MinCost}{$S[1..n][1..m], k$}
+                \State $w[1..n][1..m]$
+                \State $p[1..n]$
+                \For{$i=1\to n$}
+                    \State $A\gets []$
+                    \For{$j=1\to m$}
+                        \If{$S[i][j] = \text{`1'}$}
+                            \State $A.append(j)$
+                        \EndIf
+                    \EndFor
+                    \State $s\gets A.size()$
+                    \State $p[i]\gets s$
+                    \State $w[i][0] \gets \max{A}-\min{A}$
+                    \For{$j=1\to s$}
+                        \State $w[i][j] \gets 0$
+                        \For{$l=0\to j$}
+                            \State $w[i][j] \gets \max{\{w[i][j], w[i][0]-(A[k+s-j]-A[k+1]+1)\}}$
+                        \EndFor
+                    \EndFor
+                \EndFor
+                \State \Return MultiPack($w, p$)
+            \EndFunction
+        \end{algorithmic}
+        \label{algo5}
+    \end{algorithm}
 
 \end{document}

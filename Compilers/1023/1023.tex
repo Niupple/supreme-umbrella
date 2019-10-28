@@ -81,4 +81,49 @@
     \langle \text{identifier}\rangle _{\uparrow id} &::= \text{IDENTFIER} @2id_{\uparrow id}
 \end{align*}
 
+\paragraph*{for的文法}
+
+\begin{grammar}
+
+    <for> ::= `for' `(' <declaration> `;' <condition> `;' <increment> `)' <body>
+
+\end{grammar}
+
+\paragraph*{for的属性翻译文法}
+
+\begin{align*}
+    \langle for \rangle &\gets 
+    &\text{`for' `('} \langle declaration \rangle \text{`;'}
+    @genlab_{\uparrow x} \langle condition \rangle \text{`;'}
+    @brfg_{\uparrow y} @brg_{\uparrow z} @genlab_{\uparrow w} \langle increment \rangle \text{`)'} \\
+    &&@brp_{\downarrow x}@prodlab_{\downarrow z} \langle body \rangle 
+    @prodlab_{\downarrow y}
+\end{align*}
+
+\begin{lstlisting}[language=C]
+    char *genlab() {
+        return genlab_rand();
+    }
+
+    char *brfg() {
+        char *lab = genlab_rand();
+        emit("BRF", lab);
+        return lab;
+    }
+
+    char *brg() {
+        char *lab = genlab_rand();
+        emit("BR", lab);
+        return lab;
+    }
+
+    void brp(char *lab) {
+        emit("BR", lab);
+    }
+
+    void prodlab(char *lab) {
+        setlab(lab)
+    }
+\end{lstlisting}
+
 \end{document}

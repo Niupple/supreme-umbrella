@@ -14,6 +14,7 @@
 \usepackage{tikz}
 \usepackage{listings}
 \usepackage{xcolor}
+\usetikzlibrary{trees}
 \usetikzlibrary{automata, positioning, arrows}
 \tikzset{
     ->,
@@ -112,5 +113,46 @@ X Y 2 + = label1 BZ Z X :=  label2 BR Z Y 1 + :=
     [], A, 1, T_1 \\
     :=, T_1, 0, B
 \end{align*}
+
+\section*{7.4}
+\begin{tikzpicture}
+	[thick,scale=1, every node/.style={scale=2}]
+	\node {root}
+	child {node {1}
+		child {node {2}
+			child {node {3}}
+		}
+		child [missing] {}
+		child {node {3}
+			child {node {2}}
+		}
+	}	
+	child [missing] {}	
+	child [missing] {}
+	child [missing] {}	
+	child [missing] {}	
+	child { node {2}
+		child {node {1}
+			child {node {3}}
+		}
+		child [missing] {}
+		child {node {3}
+			child {node {1}}
+		}
+	}	
+	child [missing] {}	
+	child [missing] {}
+	child [missing] {}	
+	child [missing] {}	
+	child { node {3}
+		child {node {1}
+			child {node {2}}
+		}
+		child [missing] {}
+		child {node {2}
+			child {node {1}}
+		}
+	};
+\end{tikzpicture}
 
 \end{document}
