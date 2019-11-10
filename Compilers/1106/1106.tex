@@ -1,0 +1,213 @@
+\documentclass[UTF8]{ctexart}
+\usepackage{amsmath,amssymb}
+\usepackage{fancyhdr}
+\usepackage{amsmath,bm}
+\usepackage{mathrsfs}
+\usepackage{ntheorem}
+\usepackage{graphicx}
+\usepackage{subfigure}
+\usepackage[top=2cm, bottom=2cm, left=2cm, right=2cm]{geometry}  
+\usepackage{algorithm}  
+\usepackage{algorithmicx}  
+\usepackage{algpseudocode}
+\usepackage{multirow}
+\usepackage{tikz}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{syntax}
+\usetikzlibrary{automata, positioning, arrows}
+\tikzset{
+    ->,
+    >=stealth,
+    node distance = 3cm,
+    every state/.style={thick, fill=gray!10},
+    initial text=$ $
+}
+\lstset{numbers=left, %设置行号位置
+        numberstyle=\tiny, %设置行号大小
+        keywordstyle=\color{blue}, %设置关键字颜色
+        commentstyle=\color[cmyk]{1,0,1,0}, %设置注释颜色
+        frame=single, %设置边框格式
+        escapeinside=``, %逃逸字符(1左面的键)，用于显示中文
+        %breaklines, %自动折行
+        extendedchars=false, %解决代码跨页时，章节标题，页眉等汉字不显示的问题
+        xleftmargin=2em,xrightmargin=2em, aboveskip=1em, %设置边距
+        tabsize=4, %设置tab空格数
+        showspaces=false %不显示空格
+    }
+\setlength{\grammarparsep}{10pt plus 1pt minus 1pt} % increase separation between rules
+\setlength{\grammarindent}{20em} % increase separation between LHS/RHS 
+\floatname{algorithm}{算法}  
+\renewcommand{\algorithmicrequire}{\textbf{输入:}}  
+\renewcommand{\algorithmicensure}{\textbf{输出:}}  
+
+\theorembodyfont{\normalfont\rm\CJKfamily{song}}
+%\theoremstyle{break}
+\newtheorem{theorem}{定理}
+\newtheorem{lemma}{引理}
+\newtheorem{proposition}{命题}
+\newtheorem*{proof}{证}[section]
+\newtheorem*{solution}{解}[section]
+
+
+\title{代码优化作业2}
+\author{丁元杰 17231164}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section*{11.3}
+
+\begin{lstlisting}[language=C]
+    t1 = a
+    t2 = a*2
+    a = t2*t2
+    b = a+t2
+\end{lstlisting}
+
+\section*{11.4}
+
+初始值：
+
+\begin{align*}
+    gen[B1] &= \{d1, d2\}\\
+    kill[B1] &= \{\} \\
+    gen[B2] &= \{\} \\
+    kill[B2] &= \{\} \\
+    gen[B3] &= \{d3, d4\} \\
+    kill[B3] &= \{d1, d2, d6, d8\} \\
+    gen[B4] &= \{d5, d6\} \\
+    kill[B4] &= \{d1, d3\} \\
+    gen[B5] &= \{\} \\
+    kill[B5] &= \{\} \\
+    gen[B6] &= \{d7, d8\} \\
+    kill[B6] &= \{d2, d4, d5, d6\} \\
+\end{align*}
+
+第一趟：
+
+\begin{align*}
+    in[B1] &= \{\} \\
+    out[B1] &= \{d1, d2\} \\
+    in[B2] &= \{d1, d2\} \\
+    out[B2] &= \{d1, d2\} \\
+    in[B3] &= \{d1, d2\} \\
+    out[B3] &= \{d3, d4\} \\
+    in[B4] &= \{d2, d5, d6\} \\
+    out[B4] &= \{d2, d5, d6\} \\
+    in[B5] &= \{d2, d5, d6\} \\
+    out[B5] &= \{d2, d5, d6\} \\
+    in[B6] &= \{d2, d5, d6\} \\
+    out[B6] &= \{d7, d8\} \\
+\end{align*}
+
+第二趟：
+
+\begin{align*}
+    in[B1] &= \{\} \\
+    out[B1] &= \{d1, d2\} \\
+    in[B2] &= \{d1, d2, d3, d4\} \\
+    out[B2] &= \{d1, d2, d3, d4\} \\
+    in[B3] &= \{d1, d2, d3, d4\} \\
+    out[B3] &= \{d3, d4\} \\
+    in[B4] &= \{d1, d2, d3, d4, d5, d6\} \\
+    out[B4] &= \{d2, d4, d5, d6\} \\
+    in[B5] &= \{d2, d4, d5, d6\} \\
+    out[B5] &= \{d2, d4, d5, d6\} \\
+    in[B6] &= \{d2, d4, d5, d6\} \\
+    out[B6] &= \{d7, d8\} \\
+\end{align*}
+
+第三趟：
+
+\begin{align*}
+    in[B1] &= \{\} \\
+    out[B1] &= \{d1, d2\} \\
+    in[B2] &= \{d1, d2, d3, d4\} \\
+    out[B2] &= \{d1, d2, d3, d4\} \\
+    in[B3] &= \{d1, d2, d3, d4\} \\
+    out[B3] &= \{d3, d4\} \\
+    in[B4] &= \{d1, d2, d3, d4, d5, d6\} \\
+    out[B4] &= \{d2, d4, d5, d6\} \\
+    in[B5] &= \{d2, d4, d5, d6\} \\
+    out[B5] &= \{d2, d4, d5, d6\} \\
+    in[B6] &= \{d2, d4, d5, d6\} \\
+    out[B6] &= \{d7, d8\} \\
+\end{align*}
+
+不再发生变化。
+
+\section*{14.5}
+
+初始值：
+
+\begin{align*}
+    def[B1] &= \{a, i\}\\
+    use[B1] &= \{\} \\
+    def[B2] &= \{\} \\
+    use[B2] &= \{i\} \\
+    def[B3] &= \{\} \\
+    use[B3] &= \{a, i\} \\
+    def[B4] &= \{b, i\} \\
+    use[B4] &= \{a\} \\
+    def[B5] &= \{\} \\
+    use[B5] &= \{i\} \\
+    def[B6] &= \{\} \\
+    use[B6] &= \{b, i\} \\
+\end{align*}
+
+第一趟：
+
+\begin{align*}
+    in[B1] &= \{\} \\
+    out[B1] &= \{a, i\} \\
+    in[B2] &= \{a, i\} \\
+    out[B2] &= \{a, i\} \\
+    in[B3] &= \{a, i\} \\
+    out[B3] &= \{\} \\
+    in[B4] &= \{a\} \\
+    out[B4] &= \{b\} \\
+    in[B5] &= \{b\} \\
+    out[B5] &= \{b, i\} \\
+    in[B6] &= \{b, i\} \\
+    out[B6] &= \{\} \\
+\end{align*}
+
+第二趟：
+
+\begin{align*}
+    in[B1] &= \{\} \\
+    out[B1] &= \{a, i\} \\
+    in[B2] &= \{a, i\} \\
+    out[B2] &= \{a, i\} \\
+    in[B3] &= \{a, i\} \\
+    out[B3] &= \{a, i\} \\
+    in[B4] &= \{a\} \\
+    out[B4] &= \{b\} \\
+    in[B5] &= \{b\} \\
+    out[B5] &= \{b, i\} \\
+    in[B6] &= \{b, i\} \\
+    out[B6] &= \{b\} \\
+\end{align*}
+
+第三趟：
+
+\begin{align*}
+    in[B1] &= \{\} \\
+    out[B1] &= \{a, i\} \\
+    in[B2] &= \{a, i\} \\
+    out[B2] &= \{a, i\} \\
+    in[B3] &= \{a, i\} \\
+    out[B3] &= \{a, i\} \\
+    in[B4] &= \{a\} \\
+    out[B4] &= \{b\} \\
+    in[B5] &= \{b\} \\
+    out[B5] &= \{b, i\} \\
+    in[B6] &= \{b, i\} \\
+    out[B6] &= \{b\} \\
+\end{align*}
+
+不再变化。
+
+\end{document}
