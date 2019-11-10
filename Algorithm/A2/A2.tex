@@ -264,11 +264,7 @@
         \end{algorithm}
 
     \subsection*{复杂度分析}
-        可以从伪代码中看出，在使用 Map 作为有序关联数组时，可以使用基于平衡二叉树实现的关联数组，从而做到单次$O(\log n)$的访问和修改复杂度。上面有$n$次访问，因此因为关联数组带来的复杂度有$O(n\log n)$。
-
         后面的DP部分，由于循环只对数组进行了$O(n)$次访问，因此总共复杂度为$O(n)$
-
-        综上所述，算法的总体复杂度为$O(n \log n)$
 
 \section{数组排序问题} %4
     \subsection*{性质观察}
@@ -358,7 +354,12 @@
                 \EndFunction
             \end{algorithmic}
             \label{algo4}
-        \end{algorithm}
+        \end{algorithm}    
+        
+    \subsection*{复杂度分析}
+        可以从伪代码中看出，在使用 Map 作为有序关联数组时，可以使用基于平衡二叉树实现的关联数组，从而做到单次$O(\log n)$的访问和修改复杂度。上面有$n$次访问，因此因为关联数组带来的复杂度有$O(n\log n)$。
+
+        综上所述，算法的总体复杂度为$O(n \log n)$
 
 \section{能耗降低问题}
     \subsection*{算法思路和复杂度分析}
