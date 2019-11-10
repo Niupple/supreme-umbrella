@@ -1,0 +1,107 @@
+\documentclass[UTF8]{ctexart}
+\usepackage{amsmath,amssymb}
+\usepackage{fancyhdr}
+\usepackage{amsmath,bm}
+\usepackage{mathrsfs}
+\usepackage{ntheorem}
+\usepackage{graphicx}
+\usepackage{subfigure}
+\usepackage[top=2cm, bottom=2cm, left=2cm, right=2cm]{geometry}  
+\usepackage{algorithm}  
+\usepackage{algorithmicx}  
+\usepackage{algpseudocode}
+\usepackage{multirow}
+\usepackage{tikz}
+\usepackage{listings}
+\usepackage{palatino}
+\usepackage{xcolor}
+\usepackage{syntax}
+\usetikzlibrary{automata, positioning, arrows, shapes.geometric}
+\tikzstyle{startstop} = [rectangle, minimum width = 2cm, minimum height=1cm,text centered, draw = black]
+\tikzstyle{io} = [trapezium, trapezium left angle=70, trapezium right angle=110, minimum width=2cm, minimum height=1cm, text centered, draw=black]
+\tikzstyle{process} = [rectangle, minimum width=3cm, minimum height=1cm, text centered, draw=black]
+\tikzstyle{arrow} = [->,>=stealth]
+\tikzstyle{decision} = [diamond, aspect = 3, text centered, draw=black]
+\tikzset{
+    ->,
+    >=stealth,
+    node distance = 3cm,
+    every state/.style={thick, fill=gray!10},
+    initial text=$ $
+}
+\lstset{numbers=left, %设置行号位置
+        numberstyle=\tiny, %设置行号大小
+        keywordstyle=\color{blue}, %设置关键字颜色
+        commentstyle=\color[cmyk]{1,0,1,0}, %设置注释颜色
+        frame=single, %设置边框格式
+        escapeinside=``, %逃逸字符(1左面的键)，用于显示中文
+        %breaklines, %自动折行
+        extendedchars=false, %解决代码跨页时，章节标题，页眉等汉字不显示的问题
+        xleftmargin=2em,xrightmargin=2em, aboveskip=1em, %设置边距
+        tabsize=4, %设置tab空格数
+        showspaces=false %不显示空格
+    }
+\setlength{\grammarparsep}{10pt plus 1pt minus 1pt} % increase separation between rules
+\setlength{\grammarindent}{20em} % increase separation between LHS/RHS 
+\floatname{algorithm}{算法}  
+\renewcommand{\algorithmicrequire}{\textbf{输入:}}  
+\renewcommand{\algorithmicensure}{\textbf{输出:}}  
+
+\theorembodyfont{\normalfont\rm\CJKfamily{song}}
+%\theoremstyle{break}
+\newtheorem{theorem}{定理}
+\newtheorem{lemma}{引理}
+\newtheorem{proposition}{命题}
+\newtheorem*{proof}{证}[section]
+\newtheorem*{solution}{解}[section]
+\title{代码优化作业3}
+\author{丁元杰 17231164}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+% 箭头形式
+
+\section*{14.6}
+
+到达定义流：
+
+\begin{align*}
+    gen[B1] &= \{<B1, 1>, <B1, 2>, <B1, 3>\} \\
+    kill[B1] &= \{<B1, 1>, <B1, 2>, <B3, 1>\} \\
+    gen[B2] &= \{<B2, 1>\} \\
+    kill[B2] &= \{<B1, 1>, <B1, 2>, <B3, 1>\} \\
+    gen[B3] &= \{<B3, 1>, <B3, 2>\} \\
+    kill[B3] &= \{<B1, 1>, <B1, 2>, <B3, 1>\} \\
+    gen[B4] &= \{<B4, 1>\} \\
+    kill[B4] &= \{<B1, 1>, <B1, 2>, <B3, 1>\}
+\end{align*}
+
+迭代后结果：
+
+\begin{align*}
+    in[B1] &= \{\} \\
+    out[B1] &= \{<B1, 1>, <B1, 2>, <B1, 3>\} \\
+    in[B2] &= \{<B1, 1>, <B1, 2>, <B1, 3>\} \\
+    out[B2] &= \{<B2, 1>, <B1, 3>\} \\
+    in[B3] &= \{<B1, 1>, <B1, 2>, <B1, 3>\} \\
+    out[B3] &= \{<B3, 1>, <B3, 2>, <B1, 3>\} \\
+    in[B4] &= \{<B2, 1>, <B3, 1>, <B3, 2>, <B1, 3>\} \\
+    out[B4] &= \{<B1, 3>, <B2, 1>, <B3, 2>\}
+\end{align*}
+
+使用-定义链数据流：
+
+\begin{align*}
+    a: &L1 = \{<B2, 1>\} \\
+    b: &L2 = \{<B1, 1>, <B1, 3>, <B2, 1>, <B4, 1>\} \\
+       &L3 = \{<B3, 1>, <B3, 2>, <B4, 1>\} \\
+    c: &L4 = \{<B1, 2>, <B2, 1>, <B4, 1>\} \\
+       &L5 = \{<B1, 2>, <B3, 2>, <B4, 1>\} \\
+    d: &L6 = \{<B1, 3>\} \\
+       &L7 = \{<B3, 1>\} \\
+    e: &L8 = \{<B4, 1>\} \\
+\end{align*}
+
+\end{document}
