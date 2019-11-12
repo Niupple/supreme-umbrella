@@ -1,0 +1,207 @@
+\documentclass[UTF8]{ctexart}
+\usepackage{amsmath,amssymb}
+\usepackage{fancyhdr}
+\usepackage{amsmath,bm}
+\usepackage{mathrsfs}
+\usepackage{ntheorem}
+\usepackage{graphicx}
+\usepackage{subfigure}
+\usepackage[top=2cm, bottom=2cm, left=2cm, right=2cm]{geometry}  
+\usepackage{algorithm}  
+\usepackage{algorithmicx}  
+\usepackage{algpseudocode}
+\usepackage{multirow}
+\usepackage{tikz}
+\usepackage{listings}
+\usepackage{palatino}
+\usepackage{xcolor}
+\usepackage{syntax}
+\usetikzlibrary{automata, positioning, arrows, shapes.geometric}
+\tikzstyle{startstop} = [rectangle, minimum width = 2cm, minimum height=1cm,text centered, draw = black]
+\tikzstyle{io} = [trapezium, trapezium left angle=70, trapezium right angle=110, minimum width=2cm, minimum height=1cm, text centered, draw=black]
+\tikzstyle{process} = [rectangle, minimum width=3cm, minimum height=1cm, text centered, draw=black]
+\tikzstyle{arrow} = [->,>=stealth]
+\tikzstyle{decision} = [diamond, aspect = 3, text centered, draw=black]
+\tikzset{
+    ->,
+    >=stealth,
+    node distance = 3cm,
+    every state/.style={thick, fill=gray!10},
+    initial text=$ $
+}
+\lstset{numbers=left, %设置行号位置
+        numberstyle=\tiny, %设置行号大小
+        keywordstyle=\color{blue}, %设置关键字颜色
+        commentstyle=\color[cmyk]{1,0,1,0}, %设置注释颜色
+        frame=single, %设置边框格式
+        escapeinside=``, %逃逸字符(1左面的键)，用于显示中文
+        %breaklines, %自动折行
+        extendedchars=false, %解决代码跨页时，章节标题，页眉等汉字不显示的问题
+        xleftmargin=2em,xrightmargin=2em, aboveskip=1em, %设置边距
+        tabsize=4, %设置tab空格数
+        showspaces=false %不显示空格
+    }
+\setlength{\grammarparsep}{10pt plus 1pt minus 1pt} % increase separation between rules
+\setlength{\grammarindent}{20em} % increase separation between LHS/RHS 
+\floatname{algorithm}{算法}  
+\renewcommand{\algorithmicrequire}{\textbf{输入:}}  
+\renewcommand{\algorithmicensure}{\textbf{输出:}}  
+
+\theorembodyfont{\normalfont\rm\CJKfamily{song}}
+%\theoremstyle{break}
+\newtheorem{theorem}{定理}
+\newtheorem{lemma}{引理}
+\newtheorem{proposition}{命题}
+\newtheorem*{proof}{证}[section]
+\newtheorem*{solution}{解}[section]
+\title{代码生成作业}
+\author{丁元杰 17231164}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+% 箭头形式
+
+\section*{15.1}
+
+    \subsection*{(1)}
+        栈式：
+        \begin{lstlisting}
+PUSH B
+PUSH C
+ADD
+PUSH A
+MUL
+POP T1
+PUSH B
+PUSH C
+ADD
+POP T2
+PUSH D
+PUSH T2
+DIV
+POP T2
+PUSH T1
+PUSH T2
+SUB
+POP X
+        \end{lstlisting}
+
+        累加式：
+        \begin{lstlisting}
+LOAD B
+ADD C
+STORE T1
+LOAD A
+MUL T1
+STORE T1
+LOAD B
+ADD C
+STORE T2
+LOAD D
+DIV T2
+STORE T2
+LOAD T1
+SUB T2
+LOAD X
+        \end{lstlisting}
+    
+        寄存器-内存式：
+        \begin{lstlisting}
+LOAD R0, B
+ADD R1, R0, C
+MUL R1, A, R1
+LOAD R2, B
+ADD R2, R2, C
+DIV R3, D, R2
+SUB R0, R1, R3
+STORE R0, X
+        \end{lstlisting}
+
+        寄存器-寄存器式：
+        \begin{lstlisting}
+LOAD R0, B
+LOAD R1, C
+ADD R0, R0, R1
+LOAD R1, A
+MULT R0, R0, R1
+LOAD R1, B
+LOAD R2, C
+ADD R1, R1, R2
+LOAD R2, D
+DIV R2, R2, R1
+SUB R0, R0, R2
+STORE R0, X
+        \end{lstlisting}
+
+    \subsection*{(2)}
+        栈式：$3\times 18=54$周期
+
+        累加式：$3\times 15=45$周期
+        
+        寄存器-内存式：$3\times 7 + 1\times 1=22$周期
+        
+        寄存器-寄存器式：$3\times 7 + 1\times 5=26$周期
+
+\section*{15.4}
+    如果分配在静态区，那么执行结果将会是：
+    \begin{lstlisting}
+0
+1
+    \end{lstlisting}
+
+    而如果分配在栈上，执行结果变成：
+    \begin{lstlisting}
+0
+0
+    \end{lstlisting}
+
+    原因是C语言中，栈上分配的局部变量会在每次调用时分配内存，同时初始化，因此每次都会被清零；而分配在静态区的变量，其生命周期与程序同长，因而只有一次初始化，第二次使用时则直接引用静态区存储的值。
+
+\section*{15.5}
+
+    分配过程：
+    \begin{enumerate}
+        \item 选择$b$，因为它的度数小于$2$
+        \item 选择$x$，指定不为其分配寄存器
+        \item 选择$a$，指定不为其分配寄存器
+        \item 选择$y$，将其移走，因为度数小于$2$。现在只剩一个结点$i$
+        \item 将$i$分配在寄存器$R0$上
+        \item 将$y$加入图中，分配在寄存器$R1$上
+        \item 将$b$加入图中，分配在寄存器$R0$上
+    \end{enumerate}
+
+    最后的分配结果：
+    \begin{itemize}
+        \item $i, b$，使用$R0$寄存器
+        \item $y$，使用$R1$寄存器
+        \item $a, x$，不使用全局寄存器
+    \end{itemize}
+
+\section*{15.6}
+    四元式
+    \begin{lstlisting}
+T1 = B + C
+T2 = A * T1
+T3 = B + C
+T4 = D * T3
+T5 = T2 - T4
+    \end{lstlisting}
+
+    汇编代码：
+    \begin{lstlisting}
+mov     edx, DWORD PTR [esp + 10]
+mov     eax, DWORD PTR [esp + 14]
+add     eax, edx
+imul    eax, DWORD PTR [esp + 18]
+mov     edx, eax
+mov     ecx, DWORD PTR [esp + 10]
+mov     eax, DWORD PTR [esp + 14]
+add     eax, ecx
+imul    eax, DWORD PTR [esp + 1C]
+sub     edx, eax
+mov     eax, edx
+    \end{lstlisting}
+
+\end{document}
