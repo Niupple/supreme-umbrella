@@ -1,0 +1,187 @@
+\documentclass[UTF8]{ctexart}
+\usepackage{amsmath,amssymb}
+\usepackage{fancyhdr}
+\usepackage{amsmath,bm}
+\usepackage{mathrsfs}
+\usepackage{ntheorem}
+\usepackage{graphicx}
+\usepackage{subfigure}
+\usepackage[top=2cm, bottom=2cm, left=2cm, right=2cm]{geometry}  
+\usepackage{algorithm}  
+\usepackage{algorithmicx}  
+\usepackage{algpseudocode}
+\usepackage{multirow}
+\usepackage{tikz}
+\usepackage{listings}
+\usepackage{palatino}
+\usepackage{xcolor}
+\usepackage{syntax}
+\usetikzlibrary{automata, positioning, arrows, shapes.geometric}
+\tikzstyle{startstop} = [rectangle, minimum width = 2cm, minimum height=1cm,text centered, draw = black]
+\tikzstyle{io} = [trapezium, trapezium left angle=70, trapezium right angle=110, minimum width=2cm, minimum height=1cm, text centered, draw=black]
+\tikzstyle{process} = [rectangle, minimum width=3cm, minimum height=1cm, text centered, draw=black]
+\tikzstyle{arrow} = [->,>=stealth]
+\tikzstyle{decision} = [diamond, aspect = 3, text centered, draw=black]
+\tikzset{
+    ->,
+    >=stealth,
+    node distance = 3cm,
+    every state/.style={thick, fill=gray!10},
+    initial text=$ $
+}
+\lstset{numbers=left, %设置行号位置
+        numberstyle=\tiny, %设置行号大小
+        keywordstyle=\color{blue}, %设置关键字颜色
+        commentstyle=\color[cmyk]{1,0,1,0}, %设置注释颜色
+        frame=single, %设置边框格式
+        escapeinside=``, %逃逸字符(1左面的键)，用于显示中文
+        %breaklines, %自动折行
+        extendedchars=false, %解决代码跨页时，章节标题，页眉等汉字不显示的问题
+        xleftmargin=2em,xrightmargin=2em, aboveskip=1em, %设置边距
+        tabsize=4, %设置tab空格数
+        showspaces=false %不显示空格
+    }
+\setlength{\grammarparsep}{10pt plus 1pt minus 1pt} % increase separation between rules
+\setlength{\grammarindent}{20em} % increase separation between LHS/RHS 
+\floatname{algorithm}{算法}  
+\renewcommand{\algorithmicrequire}{\textbf{输入:}}  
+\renewcommand{\algorithmicensure}{\textbf{输出:}}  
+
+\theorembodyfont{\normalfont\rm\CJKfamily{song}}
+%\theoremstyle{break}
+\newtheorem{theorem}{定理}
+\newtheorem{lemma}{引理}
+\newtheorem{proposition}{命题}
+\newtheorem*{proof}{证}[section]
+\newtheorem*{solution}{解}[section]
+\title{高级语法分析}
+\author{丁元杰 17231164}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+% 箭头形式
+
+\section*{12.1}
+
+    \subsection*{(1)}
+        构造如下：
+        \begin{align*}
+            FIRST(E) &= \{(, a, b, \wedge\} \\
+            FIRST(T) &= \{(, a, b, \wedge\} \\
+            FIRST(F) &= \{(, a, b, \wedge\} \\
+            FIRST(P) &= \{(, a, b, \wedge\} \\
+            FIRST(T') &= \{(, a, b, \wedge, \varepsilon\} \\
+            FIRST(E') &= \{+, \varepsilon\} \\
+            FIRST(F') &= \{*\} \\
+            FOLLOW(E) &= \{\#, )\} \\
+            FOLLOW(E') &= \{\#, )\} \\
+            FOLLOW(T) &= \{+\} \\
+            FOLLOW(T') &= \{+\} \\
+            FOLLOW(F) &= \{(, a, b, \wedge\} \\
+            FOLLOW(F') &= \{(, a, b, \wedge\} \\
+            FOLLOW(P) &= \{(, a, b, \wedge\} \\
+        \end{align*}
+
+    \subsection*{(2)}
+        显然的有：
+        \begin{align*}
+            \{+\} \cap \{\varepsilon\} &= \emptyset \\
+            \{(, a, b, \wedge\} \cap \{\varepsilon\} &= \emptyset \\
+            \{*\} \cap \{\varepsilon\} &= \emptyset
+        \end{align*}
+
+        所以文法$G[E]$是LL(1)的。
+
+    \subsection*{(3)}
+
+        预测分析表见下表：
+
+        \begin{tabular}{|c|c|c|c|c|c|c|c|c|}
+            \hline
+            & + & ( & ) & $*$ & $\wedge$ & $a$ & $b$ & \# \\
+            \hline
+            $E$ & & $E\to TE'$ & & & $E\to TE'$ & $E\to TE'$ & $E\to TE'$ & \\
+            \hline
+            $E'$ & $E\to +$ & & $E\to \varepsilon$ & & & & & $E\to \varepsilon$ \\
+            \hline
+            $T$ & & $T\to FT'$ & & & $T\to FT'$ & $T\to FT'$ & $T\to FT'$ & \\
+            \hline
+            $T'$ & $T'\to \varepsilon$ & $T'\to T$ & & & $T'\to T$ & $T'\to T$ & $T'\to T$ & \\
+            \hline
+            $F$ & & $F\to PF'$ & & & $F\to PF'$ &$F\to PF'$ &$F\to PF'$ & \\
+            \hline
+            $F'$ & & $F'\to \varepsilon$ & & $F'\to *F'$ & $F'\to \varepsilon$ &$F'\to \varepsilon$ &$F'\to \varepsilon$ & \\
+            \hline
+            $P$ & & $P\to (E)$ & & & $P\to\wedge$ & $P\to a$ & $P\to b$ & \\
+            \hline
+        \end{tabular}
+
+\section*{12.2}
+
+    \subsection*{(1)}
+        FOLLOW 集合如下：
+        \begin{align*}
+            FOLLOW(S) &= \{d, a, f, \#\} \\
+            FOLLOW(A) &= \{a, d, e\} \\
+            FOLLOW(B) &= \{b\} \\
+            FOLLOW(C) &= \{b, g\}
+        \end{align*}
+
+    \subsection*{(2)}
+        FIRST 集合如下：
+        \begin{align*}
+            FIRST(aABbcd) &= \{a\} \\
+            FIRST(ASd) &= \{a\} \\
+            FIRST(Sah) &= \{a\} \\
+            FIRST(eC) &= \{e\} \\
+            FIRST(Sf) &= \{a\} \\
+            FIRST(Cg) &= \{a\} \\
+        \end{align*}
+
+    \subsection*{(3)}
+        此文法并非 LL(1) 的文法，原因如下：
+        \begin{enumerate}
+            \item 产生式中存在左递归，
+            \item $C$的产生式中，$Sf$和$Cg$的FIRST集合相交了。
+        \end{enumerate}
+
+\section*{12.6}
+    不会做
+
+\section*{补充作业}
+    \subsection*{(1)}
+        对于句子$ibtibtaea$，有符合此文法的两种语法树：
+        \begin{enumerate}
+            \item $[i, [b], [i, [b], t, [a], [e, [a]]]]$
+            \item $[i, [b], [i, [b], t, [a]], [e, [a]]]$
+        \end{enumerate}
+        所以此文法是二义的。
+
+    \subsection*{(2)}
+        \begin{align*}
+            FIRST(S) &= \{i, a\} \\
+            FIRST(S') &= \{e, \varepsilon\} \\
+            FIRST(C) &= \{b\} \\
+            FOLLOW(S) &= \{\#, e\} \\
+            FOLLOW(S') &= \{\#, e\} \\
+            FOLLOW(C) &= \{t\} 
+        \end{align*}
+    
+    \subsection*{(3)}
+        构造的表格如下：
+        
+        \begin{tabular}{|c|c|c|c|c|c|c|}
+            \hline
+            & $i$ & $t$ & $e$ & $a$ & $b$ & $\#$ \\
+            \hline
+            $S$ & $S\to iCtSS'$ & & & $S\to a$ & & \\
+            \hline
+            $S'$ & & & $S'\to \varepsilon$ & & & $S'\to \varepsilon$ \\
+            \hline
+            $C$ & & & & $C\to b$ & \\
+            \hline
+        \end{tabular}
+
+\end{document}
