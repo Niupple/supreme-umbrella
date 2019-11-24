@@ -10,11 +10,29 @@
 \usepackage{algorithm}  
 \usepackage{algorithmicx}  
 \usepackage{algpseudocode}
+\usepackage{listings}
+\usepackage{palatino}
+\usepackage{xcolor}
+\usepackage{syntax}
   
 \floatname{algorithm}{算法}  
 \renewcommand{\algorithmicrequire}{\textbf{输入:}}  
 \renewcommand{\algorithmicensure}{\textbf{输出:}}  
   
+\lstset{numbers=left, %设置行号位置
+        numberstyle=\tiny, %设置行号大小
+        keywordstyle=\color{blue}, %设置关键字颜色
+        commentstyle=\color[cmyk]{1,0,1,0}, %设置注释颜色
+        frame=single, %设置边框格式
+        escapeinside=``, %逃逸字符(1左面的键)，用于显示中文
+        %breaklines, %自动折行
+        extendedchars=false, %解决代码跨页时，章节标题，页眉等汉字不显示的问题
+        xleftmargin=2em,xrightmargin=2em, aboveskip=1em, %设置边距
+        tabsize=4, %设置tab空格数
+        showspaces=false %不显示空格
+    }
+\setlength{\grammarparsep}{10pt plus 1pt minus 1pt} % increase separation between rules
+\setlength{\grammarindent}{20em} % increase separation between LHS/RHS 
 \theorembodyfont{\normalfont\rm\CJKfamily{song}}
 %\theoremstyle{break}
 \newtheorem{theorem}{定理}
@@ -116,16 +134,16 @@
                 \State $r[1..n] \gets 0$
                 \State $c[1..n] \gets 0$
                 \State $m \gets 0$
-                \For $i \in [1, n]$
-                    \For $j \in [1, n]$
+                \For {$i \in [1, n]$}
+                    \For {$j \in [1, n]$}
                         \State $r[i] \gets r[i] + A[i][j]$
                         \State $c[j] \gets c[j] + A[i][j]$
                         \State $m \gets$ MAX $(r[i], c[j])$
                     \EndFor
                 \EndFor
 
-                \For $i \in [1, n]$
-                    \For $j \in [1, n]$
+                \For {$i \in [1, n]$}
+                    \For {$j \in [1, n]$}
                         \State $\delta \gets$ MIN $(m - r[i], m - c[j])$
                         \State $A[i][j] \gets A[i][j] + \delta$
                         \State $r[i] \gets r[i] + \delta$
@@ -144,7 +162,65 @@
     由伪代码可以看出，此算法的复杂度是$O(n^2)$。
 
 \section{数据修改问题} %2
+    \subsection*{算法思路}
+        可以考虑先将所有的操作预先施加在数组上，再依次考虑删除某一个操作对最后答案带来的影响，在这种意义下，我们可以将操作看作是区间的减法$[l, r, -x]$。这个操作对整个序列的最大值有影响，当且仅当区间$[l, r]$包含了序列中的所有最大值。对于此条件的快速判断，可以通过预先处理最左位置的最大值下标和最右位置的最大值下标解决。
+
+        记最大值为$m$，设最左位置的最大值下标为$l_m$，最右位置为$r_m$。
+
+        接下来预处理两个数组$\{p_n\}$，以及$\{s_n\}$，分别定义为：
+        $$p_i = \max_{j \leq i}{\{a_i\}}$$
+        $$s_i = \max_{j \geq i}{\{a_i\}}$$
+        是$a_n$序列的前缀和后缀最大值数组。
+
+        由此，操作$[l_i, r_i, -x_i]$对最后答案的影响分情况：
+        \begin{enumerate}
+            \item 如果$[l_m, r_m]\nsubseteq [l_i, r_i]$，那么它对答案没有影响
+            \item 否则，去掉这一个操作之后，新的答案变为$ans_i=\max{\{p_{l-1}, s_{r+1}, m-x_i\}}$。
+        \end{enumerate}
+        对所有的满足情况2的询问计算$ans_i$，所有的$ans_i$的最小值即是答案。
+
+    \subsection*{伪代码}
+    参见算法\ref{algo2}
+    \begin{algorithm}
+        \caption{数据修改问题}
+        \begin{algorithmic}[1]
+            \Require $a[1..n]$序列，$l[1..Q]$，$r[1..Q]$，$x[1..Q]$
+            \Ensure 答案
+            \Function {CALC}{$A[1..n][1..n], l[1..Q], r[1..Q], x[1..Q]$}
+                \State $pre[0..n] \gets$ INT_MIN
+                \State $suf[1..n+1] \gets$ INT_MIN
+                \For {$i \in [1, n]$}
+                    \State $pre[i] \gets$ MAX$(pre[i-1], a[i])$
+                    \State $suf[n+1-i] \gets$ MAX$(pre[n+2-i], a[n+1-i])$
+                \EndFor
+                \State $l_m \gets 1$ 
+                \State $r_m \gets 1$
+                \For {$i \in [1..n]$}
+                    \If {$a[i] > a[l_m]$}
+                        \State $l_m \gets i$
+                        \State $r_m \gets i$
+                    \ElsIf {$a[i] = a[l_m]$}
+                        \State $r_m \gets i$
+                    \EndIf
+                \EndFor
+                \State $ans \gets a[l_m]$
+                \State $m \gets a[l_m]$
+                \For {$i \in [1..n]$}
+                    \If {$l[i] \leq l_m$ and $r[i] \geq r_m$}
+                        $tmp \gets$ MAX$(pre[l[i]-1], suf[r[i]+1], m-x[i])$
+                        $ans \gets$ MIN$(ans, tmp)$
+                    \EndIf
+                \EndFor
+                \State \Return $ans$
+                
+            \EndFunction
     
+        \end{algorithmic}
+        \label{algo2}
+    \end{algorithm}
+
+    \subsection*{复杂度分析}
+        由伪代码可以看出，此算法的复杂度是$O(n+Q)$。
 
 \section{最大矩阵问题} %3
     \subsection*{算法思路}
@@ -172,43 +248,43 @@
         接下来，行调整和列调整的目的都是清楚、且内部互相独立的，因此调整方法是唯一的。
 
     \subsection*{伪代码}
-    参见算法\ref{algo2}。其中，ROW\_REVERSE是对行进行翻转的函数；COLUMN\_REVERSE则是对列进行翻转的函数。BTOI则是将01数组转化为对应的二进制整数的函数。
+    参见算法\ref{algo3}。其中，ROW\_REVERSE是对行进行翻转的函数；COLUMN\_REVERSE则是对列进行翻转的函数。BTOI则是将01数组转化为对应的二进制整数的函数。
         \begin{algorithm}
             \caption{求解此问题}
             \begin{algorithmic}[1]
                 \Require $A[1..n][1..n]$
                 \Ensure 最优方案的值$ans$
                 \Function {BestMatrix}{$A[1..n][1..m]$}
-                    \For $i \in [1..n]$
-                        \If $A[i][1] = 0$
+                    \For {$i \in [1..n]$}
+                        \If {$A[i][1] = 0$}
                             \State ROW\_REVERSE($i$)
                         \EndIf
                     \EndFor
 
-                    \For $j \in [1..m]$
+                    \For {$j \in [1..m]$}
                         \State $a \gets 0$
                         \State $b \gets 0$
-                        \For $i \in [1..n]$
-                            \If $A[i][j] = 1$
+                        \For {$i \in [1..n]$}
+                            \If {$A[i][j] = 1$}
                                 \State $a \gets a+1$
                             \Else
                                 \State $b \gets b+1$
                             \EndIf
                         \EndFor
-                        \If $a < b$
+                        \If {$a < b$}
                             \State COLUMN\_REVERSE($j$)
                         \EndIf
                     \EndFor
 
                     \State $ans \gets 0$
-                    \For $i \in [1..n]$
+                    \For {$i \in [1..n]$}
                         \State $ans \gets$ BTOI($A[i]$)
                     \EndFor
 
                     \State \Return $ans$
                 \EndFunction
             \end{algorithmic}
-            \label{algo2}
+            \label{algo3}
         \end{algorithm}
 
     \subsection*{复杂度分析}
@@ -216,133 +292,29 @@
 
 \section{环路问题} %4
     \subsection*{算法思路}
-        以任意结点为起点进行深度优先搜索（DFS），并且记录当前栈中的结点。
+        以任意结点为起点进行深度优先搜索（DFS），并且记录每个结点的已访问情况（未访问、已访问），以及使用栈记录当前栈中的结点。
 
-    \subsection*{算法思路}
-        有了基本的性质，就可以设计找出最多不用操作的数的算法了。设两个关联数组$l, r:X\to I$其中$X$是输入序列的元素集合，$I$是原序列的指标集。其中$l[x]$表示在所有的$x$中，下标最小的那一个下标；$r[x]$则表示所有序列中的$x$中，下标最大的那一个下标。
-
-        设$A$是最终求得的，不用操作的数的集合，那么可以看出$A$满足几条性质：
-
+        DFS到达一个结点$u$时，即将$u$压入栈中，并将其记录为已经访问过，接下来向着与$u$相连的结点$v$进行扩展：
         \begin{enumerate}
-            \item $\forall x\in X: \min{A} \leq x \leq \max{A} \Rightarrow x\in A$
-            \item $\forall x, y \in A: x < y \Rightarrow r[x] < l[y]$
+            \item 如果$v$还没有被访问过，则立即访问$v$，并进行递归
+            \item 如果$v$已经被访问过，那么$v$必然在栈中，此时连续弹栈，直至栈中的$v$被弹出，即可得到一个环
         \end{enumerate}
 
-        其中，第1条性质说明了不操作的数必然是``连续''的一段，这里的连续并不是自然数的连续的含义，而是其中不含有任何其他的$X$的元素的含义，也即在$X$的范围中连续。
+        在实现的过程中，应当注意从$u$向外继续拓展的时候，不能够向栈的次顶（即访问$u$之前访问的结点）进行拓展。
 
-        我们再引入一个映射$\sigma: X \to [0..|X|-1]$和它的逆映射$\tau: [0..|X|-1] \to X$，其中$\sigma(x)$表示在$X$中小于$x$的元素数量。有了这个映射，上段所描述的$x, y$在$X$的范围中连续，就可以转化为$\sigma(x), \sigma(y)$在$\mathbb{N}$的范围中连续。
+        至于为何第一次访问到已访问结点$v$，之一定在栈中，可以考虑之前访问到$v$时的情况。由于$v$已经完成访问，并且已经弹出了栈，说明从$v$出发的所有不与$\langle s, v\rangle$相交的结点都已经完成了访问，这其中自然包括当前的元素$u$。由此可以推出矛盾。
 
-        有了这些记号，我们就能够方便地描述我们的工作。最终所期望的结果，是找出$[0..|X|-1]=:M$的一个最大的连续子集$A^*$，使得下面的性质成立：
-        $$\forall x, y \in A^*: r_{\tau(x)} < l_{\tau(y)}$$
-
-        现在使用动态规划的思想解决问题，设$f[i]$表示以$i$结尾的$M$的子区间中，满足上述条件最长子区间长度。由此可以得到一个简略的状态转移函数：
-
-        \begin{equation*}
-            f[i] = 
-            \begin{cases}
-                1 &, i=0 \\
-                1 &, r_{\tau({i-1})} > l_{\tau({i})} \\
-                f[i-1] + 1 &, r_{\tau({i-1})} < l_{\tau({i})}
-            \end{cases}
-        \end{equation*}
-
-    \subsection*{伪代码}
-        参见算法\ref{algo4}
-        \begin{algorithm}
-            \caption{求解此问题}
-            \begin{algorithmic}[1]
-                \Require $A[1..n]$，
-                \Ensure 最优方案的值$ans$
-                \Function {MinOperation}{$A[1..n]$}
-                    \State $f[0..n-1]$
-                    \State $l \gets$ Map$\langle$int, int$\rangle$
-                    \State $r \gets$ Map$\langle$int, int$\rangle$
-                    \For{$i = 1\to n$}
-                        \State $l[A[i]]\gets \min{\{l[A[i]], i\}}$
-                        \State $r[A[i]]\gets \max{\{l[A[i]], i\}}$
-                    \EndFor
-                    \State $m \gets l.size()$
-                    \State $ll[0..m]$
-                    \State $rr[0..m]$
-                    \State $i \gets 0$
-                    \For{$x\in l$}
-                        \State $ll[i]\gets x$
-                        \State $i \gets i+1$
-                    \EndFor
-                    \State $i \gets 0$
-                    \For{$x\in r$}
-                        \State $rr[i]\gets x$
-                        \State $i \gets i+1$
-                    \EndFor
-                    \State $f[0] \gets 1$
-                    \State $ans \gets 0$
-                    \For{$i = 1\to m-1$}
-                        \If{$rr[i-1] < ll[i]$}
-                            \State $f[i] \gets f[i-1]+1$
-                        \Else
-                            \State $f[i] = 1$
-                        \EndIf
-                        \State $ans \gets \max{\{ans, f[i]\}}$
-                    \EndFor
-                    \State \Return $ans$
-                \EndFunction
-            \end{algorithmic}
-            \label{algo4}
-        \end{algorithm}    
+    \subsection*{真代码}
+        \lstinputlisting {algo4.cpp}
         
     \subsection*{复杂度分析}
-        可以从伪代码中看出，在使用 Map 作为有序关联数组时，可以使用基于平衡二叉树实现的关联数组，从而做到单次$O(\log n)$的访问和修改复杂度。上面有$n$次访问，因此因为关联数组带来的复杂度有$O(n\log n)$。
+        由于每个节点最多被访问一次，每条边最多被尝试两次，所以总体的时间复杂度为$O(V+E)$。
 
-        综上所述，算法的总体复杂度为$O(n \log n)$
-
-\section{能耗降低问题}
+\section{最小生成树问题}
     \subsection*{算法思路和复杂度分析}
-        在$k$小于所有字符串中1的个数时，我们无需将任何0变成1，因此期望每一次翻转都对答案有正向的贡献；反之，如果$k$太大，那么答案可以直接记为$k-\#1$。所以我们现在只考虑消除1的情形。
-        
-        考虑到每一个串在消除掉一定量$k$时，其产生的能耗是一定的。我们可以预处理出每一个串在消除$j$个1之后节省的能耗。如果第$i$个串有$s_i$个1，那么可以把这个串拆成$s_i$件物品，其中第$j$个物品表示第$i$个串去掉$j$个1之后，节省的能耗。这样，以去掉的1的个数为体积，$k$为容量，原问题被转化为了若干个类型的分组背包。
+        收到 Kruskal 的启发，优先对边长为$1$的边进行连接，紧接着时边长为$2$的。首先只考虑图中边长为$1$的边，全部的点被这些边划分为了若干互相不连通的连通块。假设这些连通块的个数为$n$个，那么它们一定被若干边长为$2$的边连成一个连通图。由于连接$n$个连通块所需的最小边数为$n-1$，所以最后一共有$n-1$条长度为$2$的边，以及$(|V|-1)-(n-1)=|V|-n$条长度为$1$的边。最后的最小生成树总边长$|V|-n+2(n-1)=|V|+n-2$。
 
-        由于分组背包有着完整的、已解决的实现，我们这里着重关注如何将每一个字符串拆成若干个类型相同的物品。
-
-        对于第$i$个字符串，可以抽取一个单调的指标序列$A_i$，并且有$s_i = |A_i|$。其中，$A_i$储存了$S_i$字符串的所有1出现位置的下标。现在用$w_{ij}$表示第$i$类的第$j$个物品的价值，含义是字符串$S_i$去掉$j$个1之后节省的能耗，其体积为$j$。根据定义
-        $$w_{ij} = w_{i0} - \max_{0 \leq k \leq j}{A_i[k+s_i-j]-A_i[k+1]+1}$$
-        不难看出，为了计算$w_{ij}$需要花费$O(m^2)$的时间。因此，为了初始化得到所有的物品，需要花费$O(nm^2)$的时间。
-
-        最后，我们得到了$n$组物品，其中每组物品最多$m$件，总容量为$k$，由分组背包的时间复杂度可以知道，用于动态规划的时间是$O(nmk)$。
-
-        综上，总体的时间复杂度
-        $$T(n, m, k) = O(nmk+nm^2)$$
-
-    \subsection*{伪代码}
-    参见算法\ref{algo5}
-    \begin{algorithm}
-        \caption{求解此问题}
-        \begin{algorithmic}[1]
-            \Require $S[1..n][1..m], k$，
-            \Ensure 最优方案的值$ans$
-            \Function {MinCost}{$S[1..n][1..m], k$}
-                \State $w[1..n][1..m]$
-                \State $p[1..n]$
-                \For{$i=1\to n$}
-                    \State $A\gets []$
-                    \For{$j=1\to m$}
-                        \If{$S[i][j] = \text{`1'}$}
-                            \State $A.append(j)$
-                        \EndIf
-                    \EndFor
-                    \State $s\gets A.size()$
-                    \State $p[i]\gets s$
-                    \State $w[i][0] \gets \max{A}-\min{A}$
-                    \For{$j=1\to s$}
-                        \State $w[i][j] \gets 0$
-                        \For{$l=0\to j$}
-                            \State $w[i][j] \gets \max{\{w[i][j], w[i][0]-(A[k+s-j]-A[k+1]+1)\}}$
-                        \EndFor
-                    \EndFor
-                \EndFor
-                \State \Return MultiPack($w, p$)
-            \EndFunction
-        \end{algorithmic}
-        \label{algo5}
-    \end{algorithm}
+    \subsection*{真代码}
+        \lstinputlisting{algo5.cpp}
 
 \end{document}
