@@ -1,0 +1,298 @@
+\documentclass[UTF8]{ctexart}
+\usepackage{amsmath,amssymb}
+\usepackage{fancyhdr}
+\usepackage{amsmath,bm}
+\usepackage{mathrsfs}
+\usepackage{ntheorem}
+\usepackage{graphicx}
+\usepackage{subfigure}
+\usepackage[top=2cm, bottom=2cm, left=2cm, right=2cm]{geometry}  
+\usepackage{algorithm}  
+\usepackage{algorithmicx}  
+\usepackage{algpseudocode}
+\usepackage{multirow}
+\usepackage{tikz}
+\usepackage{listings}
+\usepackage{palatino}
+\usepackage{xcolor}
+\usepackage{syntax}
+\usetikzlibrary{automata, positioning, arrows, shapes.geometric}
+\tikzstyle{startstop} = [rectangle, minimum width = 2cm, minimum height=1cm,text centered, draw = black]
+\tikzstyle{io} = [trapezium, trapezium left angle=70, trapezium right angle=110, minimum width=2cm, minimum height=1cm, text centered, draw=black]
+\tikzstyle{process} = [rectangle, minimum width=3cm, minimum height=1cm, text centered, draw=black]
+\tikzstyle{arrow} = [->,>=stealth]
+\tikzstyle{decision} = [diamond, aspect = 3, text centered, draw=black]
+\tikzset{
+    ->,
+    >=stealth,
+    node distance = 3cm,
+    every state/.style={thick, fill=gray!10},
+    initial text=$ $
+}
+\lstset{numbers=left, %设置行号位置
+        numberstyle=\tiny, %设置行号大小
+        keywordstyle=\color{blue}, %设置关键字颜色
+        commentstyle=\color[cmyk]{1,0,1,0}, %设置注释颜色
+        frame=single, %设置边框格式
+        escapeinside=``, %逃逸字符(1左面的键)，用于显示中文
+        %breaklines, %自动折行
+        extendedchars=false, %解决代码跨页时，章节标题，页眉等汉字不显示的问题
+        xleftmargin=2em,xrightmargin=2em, aboveskip=1em, %设置边距
+        tabsize=4, %设置tab空格数
+        showspaces=false %不显示空格
+    }
+\setlength{\grammarparsep}{10pt plus 1pt minus 1pt} % increase separation between rules
+\setlength{\grammarindent}{20em} % increase separation between LHS/RHS 
+\floatname{algorithm}{算法}  
+\renewcommand{\algorithmicrequire}{\textbf{输入:}}  
+\renewcommand{\algorithmicensure}{\textbf{输出:}}  
+
+\theorembodyfont{\normalfont\rm\CJKfamily{song}}
+%\theoremstyle{break}
+\newtheorem{theorem}{定理}
+\newtheorem{lemma}{引理}
+\newtheorem{proposition}{命题}
+\newtheorem*{proof}{证}[section]
+\newtheorem*{solution}{解}[section]
+\title{高级语法分析}
+\author{丁元杰 17231164}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+% 箭头形式
+
+\section*{12-2.2}
+
+    \subsection*{(2)}
+        \begin{tabular}{|c|c|c|c|c|}
+            \hline
+            步骤 & 符号栈 & 优先关系 & 读入符号 & 输入串 \\
+            \hline
+            $0$ & $\#$ & $<$ & $a$ & $+b*(c+d)-e\#$ \\
+            \hline
+            $1$ & $\#a$ & $>$ & $+$ & $b*(c+d)-e\#$ \\
+            \hline
+            $2$ & $\#E$ & $<$ & $+$ & $b*(c+d)-e\#$ \\
+            \hline
+            $3$ & $\#E+$ & $<$ & $b$ & $*(c+d)-e\#$ \\
+            \hline
+            $4$ & $\#E+b$ & $>$ & $*$ & $(c+d)-e\#$ \\
+            \hline
+            $4$ & $\#E+E$ & $<$ & $*$ & $(c+d)-e\#$ \\
+            \hline
+            $5$ & $\#E+E*$ & $<$ & $($ & $c+d)-e\#$ \\
+            \hline
+            $6$ & $\#E+E*($ & $<$ & $c$ & $+d)-e\#$ \\
+            \hline
+            $7$ & $\#E+E*(c$ & $>$ & $+$ & $d)-e\#$ \\
+            \hline
+            $7$ & $\#E+E*(E$ & $<$ & $+$ & $d)-e\#$ \\
+            \hline
+            $8$ & $\#E+E*(E+$ & $<$ & $d$ & $)-e\#$ \\
+            \hline
+            $9$ & $\#E+E*(E+d$ & $>$ & $)$ & $-e\#$ \\
+            \hline
+            $9$ & $\#E+E*(E+E$ & $>$ & $)$ & $-e\#$ \\
+            \hline
+            $9$ & $\#E+E*(E$ & $=$ & $)$ & $-e\#$ \\
+            \hline
+            $9$ & $\#E+E*(E)$ & $>$ & $-$ & $e\#$ \\
+            \hline
+            $9$ & $\#E+E*E$ & $>$ & $-$ & $e\#$ \\
+            \hline
+            $9$ & $\#E+E$ & $>$ & $-$ & $e\#$ \\
+            \hline
+            $9$ & $\#E$ & $<$ & $-$ & $e\#$ \\
+            \hline
+            $9$ & $\#E-$ & $<$ & $e$ & $\#$ \\
+            \hline
+            $9$ & $\#E-e$ & $>$ & $\#$ & \\
+            \hline
+            $9$ & $\#E-E$ & $>$ & $\#$ & \\
+            \hline
+            $9$ & $\#E$ & $>$ & $\#$ & \\
+            \hline
+            $9$ & $\#E$ & 停止 & $\#$ & \\
+            \hline
+        \end{tabular}
+
+\section*{12-2.4}
+
+    $E$：
+    \begin{itemize}
+        \item 短语：$E$
+        \item 素短语：无
+    \end{itemize}
+
+    $T$：
+    \begin{itemize}
+        \item 短语：$T$
+        \item 素短语：无
+    \end{itemize}
+    
+    $i$：
+    \begin{itemize}
+        \item 短语：$i$
+        \item 素短语：$i$
+    \end{itemize}
+    
+    $T*F$：
+    \begin{itemize}
+        \item 短语：$T*F$
+        \item 素短语：$T*F$
+    \end{itemize}
+    
+    $F*F$：
+    \begin{itemize}
+        \item 短语：$F, F*F$
+        \item 素短语：$F * F$
+    \end{itemize}
+    
+    $i*F$：
+    \begin{itemize}
+        \item 短语：$i, i*F$
+        \item 素短语：$i, i*F$
+    \end{itemize}
+    
+    $F*i$：
+    \begin{itemize}
+        \item 短语：$F*i, F, i$
+        \item 素短语：$F*i, i$
+    \end{itemize}
+    
+    $F + F + F$：
+    \begin{itemize}
+        \item 短语：$F + F + F, F + F, F$
+        \item 素短语：$F + F$
+    \end{itemize}
+
+\section*{12-2.5}
+
+$i$
+
+\begin{tabular}{|c|c|c|c|c|}
+    \hline
+    步骤 & 句型 & 优先关系 & 最左子串 & 规约符号 \\
+    \hline
+    1 & $\#i\#$ & $\# < i > \#$ & $i$ & $E$ \\
+    \hline
+\end{tabular}
+
+$i+i$
+
+\begin{tabular}{|c|c|c|c|c|}
+    \hline
+    步骤 & 句型 & 优先关系 & 最左子串 & 规约符号 \\
+    \hline
+    1 & $\#i+i\#$ & $\# < i > + < i > \#$ & $i$ & $F$ \\
+    \hline
+    1 & $\#F+i\#$ & $\# < + < i > \#$ & $i$ & $F$ \\
+    \hline
+    1 & $\#F+F\#$ & $\# <  +  > \#$ & $F+F$ & $E$ \\
+    \hline
+\end{tabular}
+
+$i*i+i$
+
+\begin{tabular}{|c|c|c|c|c|}
+    \hline
+    步骤 & 句型 & 优先关系 & 最左子串 & 规约符号 \\
+    \hline
+    1 & $\#i*i+i\#$ & $\# < i > * < i > + < i > \#$ & $i * i$ & $T$ \\
+    \hline
+    1 & $\#F*i+i\#$ & $\# < * < i > + < i > \#$ & $i$ & $F$ \\
+    \hline
+    1 & $\#F*F+i\#$ & $\# < * > + < i > \#$ & $F*F$ & $T$ \\
+    \hline
+    1 & $\#T+i\#$ & $\# < + < i > \#$ & $i$ & $F$ \\
+    \hline
+    1 & $\#T+F\#$ & $\# < + > \#$ & $T+F$ & $E$ \\
+    \hline
+\end{tabular}
+
+$i*(i+i*i)+((i+i)*i)$
+参见表\ref{induction}
+
+\begin{table}
+    \caption{规约表格}
+    \centering
+    \begin{tabular}{|p{30pt}|p{100pt}|p{200pt}|p{50pt}|p{30pt}|}
+        \hline
+        步骤 & 句型 & 优先关系 & 最左子串 & 规约符号 \\
+        \hline
+        1 & $\#i*(i+i*i)+((i+i)*i)\#$ & $\# < i > * < ( < i > + < i > * < i > ) > + < ( < ( < i > + < i > ) > * < i > ) > \#$ & $i$ & $F$ \\
+        \hline
+        1 & $\#F*(i+i*i)+((i+i)*i)\#$ & $\# < * < ( < i > + < i > * < i > ) > + < ( < ( < i > + < i > ) > * < i > ) > \#$ & $i$ & $F$ \\
+        \hline
+        1 & $\#F*(F+i*i)+((i+i)*i)\#$ & $\# < * < ( < + < i > * < i > ) > + < ( < ( < i > + < i > ) > * < i > ) > \#$ & $i$ & $F$ \\
+        \hline
+        1 & $\#F*(F+F*i)+((i+i)*i)\#$ & $\# < * < ( < + < * < i > ) > + < ( < ( < i > + < i > ) > * < i > ) > \#$ & $i$ & $F$ \\
+        \hline
+        1 & $\#F*(F+F*F)+((i+i)*i)\#$ & $\# < * < ( < + < * > ) > + < ( < ( < i > + < i > ) > * < i > ) > \#$ & $F*F$ & $T$ \\
+        \hline
+        1 & $\#F*(F+T)+((i+i)*i)\#$ & $\# < * < ( < + > ) > + < ( < ( < i > + < i > ) > * < i > ) > \#$ & $F+T$ & $E$ \\
+        \hline
+        1 & $\#F*(E)+((i+i)*i)\#$ & $\# < * < ( = ) > + < ( < ( < i > + < i > ) > * < i > ) > \#$ & $(E)$ & $F$ \\
+        \hline
+        1 & $\#F*F+((i+i)*i)\#$ & $\# < * > + < ( < ( < i > + < i > ) > * < i > ) > \#$ & $F*F$ & $T$ \\
+        \hline
+        1 & $\#T+((i+i)*i)\#$ & $\# < + < ( < ( < i > + < i > ) > * < i > ) > \#$ & $i$ & $F$ \\
+        \hline
+        1 & $\#T+((F+i)*i)\#$ & $\# < + < ( < ( < + < i > ) > * < i > ) > \#$ & $i$ & $F$ \\
+        \hline
+        1 & $\#T+((F+F)*i)\#$ & $\# < + < ( < ( < + > ) > * < i > ) > \#$ & $F+F$ & $E$ \\
+        \hline
+        1 & $\#T+((E)*i)\#$ & $\# < + < ( < ( = ) > * < i > ) > \#$ & $(E)$ & $F$ \\
+        \hline
+        1 & $\#T+(F*i)\#$ & $\# < + < ( < * < i > ) > \#$ & $i$ & $F$ \\
+        \hline
+        1 & $\#T+(F*F)\#$ & $\# < + < ( < * > ) > \#$ & $F*F$ & $T$ \\
+        \hline
+        1 & $\#T+(T)\#$ & $\# < + < ( = ) > \#$ & $(T)$ & $F$ \\
+        \hline
+        1 & $\#T+F\#$ & $\# < + > \#$ & $T+F$ & $E$ \\
+        \hline
+    \end{tabular}
+    \label{induction}
+\end{table}
+
+
+\section*{补充作业}
+    \subsection*{(1)}
+        构造如下：
+        \begin{align*}
+            FIRSTVT(E) &= \{+\} \\
+            FIRSTVT(T) &= \{(, i\} \\
+            LASTVT(E) &= \{+\} \\
+            LASTVT(T) &= \{), i\} 
+        \end{align*}
+
+    \subsection*{(2)}
+        参见表\ref{matrix}.
+        \begin{table}
+            \caption{优先关系矩阵}
+            \centering
+            \begin{tabular}{|c||c|c|c|c|c|}
+                \hline
+                & $+$ & $i$ & $($ & $)$ & $\#$ \\
+                \hline \hline
+                $+$ & $>$ & $<$ & $<$ & $>$ & $>$ \\
+                \hline
+                $i$ & $>$ &  &  & $>$ & $>$ \\
+                \hline
+                $($ & $<$ & $<$ & $<$ & $=$ &  \\
+                \hline
+                $)$ & $>$ & $>$ &  & $>$ & $>$ \\
+                \hline
+                $\#$ & $<$ & $<$ & $<$ &  &  \\
+                \hline
+            \end{tabular}
+            \label{matrix}
+        \end{table}
+
+    \subsection*{(3)}
+        显然地，该文法是算符优先算法。
+
+\end{document}
