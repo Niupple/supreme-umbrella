@@ -1,0 +1,626 @@
+\documentclass[UTF8]{ctexart}
+\usepackage{amsmath,amssymb}
+\usepackage{fancyhdr}
+\usepackage{amsmath,bm}
+\usepackage{mathrsfs}
+\usepackage{ntheorem}
+\usepackage{graphicx}
+\usepackage{subfigure}
+\usepackage[top=2cm, bottom=2cm, left=2cm, right=2cm]{geometry}  
+\usepackage{algorithm}  
+\usepackage{algorithmicx}  
+\usepackage{algpseudocode}
+\usepackage{multirow}
+\usepackage{tikz}
+\usepackage{listings}
+\usepackage{palatino}
+\usepackage{xcolor}
+\usepackage{syntax}
+\usetikzlibrary{automata, positioning, arrows, shapes.geometric}
+\tikzstyle{startstop} = [rectangle, minimum width = 2cm, minimum height=1cm,text centered, draw = black]
+\tikzstyle{io} = [trapezium, trapezium left angle=70, trapezium right angle=110, minimum width=2cm, minimum height=1cm, text centered, draw=black]
+\tikzstyle{process} = [rectangle, minimum width=3cm, minimum height=1cm, text centered, draw=black]
+\tikzstyle{arrow} = [->,>=stealth]
+\tikzstyle{decision} = [diamond, aspect = 3, text centered, draw=black]
+\tikzset{
+    ->,
+    >=stealth,
+    node distance = 3cm,
+    every state/.style={thick, fill=gray!10},
+    initial text=$ $
+}
+\lstset{numbers=left, %设置行号位置
+        numberstyle=\tiny, %设置行号大小
+        keywordstyle=\color{blue}, %设置关键字颜色
+        commentstyle=\color[cmyk]{1,0,1,0}, %设置注释颜色
+        frame=single, %设置边框格式
+        escapeinside=``, %逃逸字符(1左面的键)，用于显示中文
+        %breaklines, %自动折行
+        extendedchars=false, %解决代码跨页时，章节标题，页眉等汉字不显示的问题
+        xleftmargin=2em,xrightmargin=2em, aboveskip=1em, %设置边距
+        tabsize=4, %设置tab空格数
+        showspaces=false %不显示空格
+    }
+\setlength{\grammarparsep}{10pt plus 1pt minus 1pt} % increase separation between rules
+\setlength{\grammarindent}{20em} % increase separation between LHS/RHS 
+\floatname{algorithm}{算法}  
+\renewcommand{\algorithmicrequire}{\textbf{输入:}}  
+\renewcommand{\algorithmicensure}{\textbf{输出:}}  
+
+\theorembodyfont{\normalfont\rm\CJKfamily{song}}
+%\theoremstyle{break}
+\newtheorem{theorem}{定理}
+\newtheorem{lemma}{引理}
+\newtheorem{proposition}{命题}
+\newtheorem*{proof}{证}[section]
+\newtheorem*{solution}{解}[section]
+\title{高级语法分析}
+\author{丁元杰 17231164}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+% 箭头形式
+
+\section*{12-3}
+
+    \subsection*{(1)}
+        $E+i*i\#$ 的活前缀集合为：
+        $$\{E, E+, E+i\}$$
+
+        $E+P\uparrow(i+i)$ 的活前缀集合为：
+        $$\{E, E+, E+P, E+P\uparrow, E+P\uparrow(, E+P\uparrow(i\}$$
+
+    \subsection*{(2)}
+
+        $i+i*i$: 
+        \begin{align*}
+            S 
+            & \Rightarrow E\# \\
+            & \Rightarrow E+T\# \\
+            & \Rightarrow E+P\# \\
+            & \Rightarrow E+P*F\# \\
+            & \Rightarrow E+P*i\# \\
+            & \Rightarrow E+F*i\# \\
+            & \Rightarrow E+i*i\# \\
+            & \Rightarrow T+i*i\# \\
+            & \Rightarrow P+i*i\# \\
+            & \Rightarrow F+i*i\# \\
+            & \Rightarrow i+i*i\#
+        \end{align*}
+
+        $i+i\uparrow(i+i)$
+        \begin{align*}
+            S
+            & \Rightarrow E\# \\
+            & \Rightarrow E+T\# \\
+            & \Rightarrow E+P\uparrow T \\
+            & \Rightarrow E+P\uparrow P \\
+            & \Rightarrow E+P\uparrow F \\
+            & \Rightarrow E+P\uparrow (E) \\
+            & \Rightarrow E+P\uparrow (E+T) \\
+            & \Rightarrow E+P\uparrow (E+P) \\
+            & \Rightarrow E+P\uparrow (E+F) \\
+            & \Rightarrow E+P\uparrow (E+i) \\
+            & \Rightarrow E+P\uparrow (T+i) \\
+            & \Rightarrow E+P\uparrow (P+i) \\
+            & \Rightarrow E+P\uparrow (F+i) \\
+            & \Rightarrow E+P\uparrow (i+i) \\
+            & \Rightarrow E+F\uparrow (i+i) \\
+            & \Rightarrow E+i\uparrow (i+i) \\
+            & \Rightarrow T+i\uparrow (i+i) \\
+            & \Rightarrow P+i\uparrow (i+i) \\
+            & \Rightarrow F+i\uparrow (i+i) \\
+            & \Rightarrow i+i\uparrow (i+i)
+        \end{align*}
+
+\section*{12-4}
+
+    \subsection*{(1)}
+        $E\uparrow$ 的有效项目集：
+        $$\{\}$$
+
+    \subsection*{(2)}
+        $E-($ 的有效项目集：
+        $$\{E.-(\}$$
+
+    \subsection*{(3)}
+        $E-T$ 的有效项目集：
+        $$\{E-T.\}$$
+
+\section*{12-5.1}
+    \subsection*{1 构造 DFA}
+        \subsubsection*{(1) 拓广文法}
+            \begin{align*}
+                r_1 = S &\to E \\
+                r_2 = E &\to wX \\
+                r_3 = E &\to xY \\
+                r_4 = X &\to yX \\
+                r_5 = X &\to z \\
+                r_6 = Y &\to yY \\
+                r_7 = Y &\to z
+            \end{align*}
+
+        \subsubsection*{(2) 列出项目}
+            \begin{align*}
+                S &\to .E \\
+                S &\to E. \\
+                E &\to .wX \\
+                E &\to w.X \\
+                E &\to wX. \\
+                E &\to .xY \\
+                E &\to x.Y \\
+                E &\to xY. \\
+                X &\to .yX \\
+                X &\to y.X \\
+                X &\to yX. \\
+                X &\to .z \\
+                X &\to z. \\
+                Y &\to .yY \\
+                Y &\to y.Y \\
+                Y &\to yY. \\
+                Y &\to .z \\
+                Y &\to z.
+            \end{align*}
+
+        \subsubsection*{(3) 组成项目集}
+            \begin{align*}
+                I_0 = closure\{S\to .E\} &= \{S\to .E, E\to .wX, E\to .xY\} \\
+                I_1 = closure\{S\to E.\} &= \{S\to E.\} \\
+                I_2 = closure\{E\to w.X\} &= \{E\to w.X, X\to .yX, X\to .z\} \\
+                I_3 = closure\{E\to x.Y\} &= \{E\to x.Y, Y\to .yY, Y\to .z\} \\
+                I_4 = closure\{E\to wX.\} &= \{E\to wX.\} \\
+                I_5 = closure\{X\to y.X\} &= \{X\to y.X, X\to .yX, X\to .z\} \\
+                I_6 = closure\{X\to z.\} &= \{X\to z.\} \\
+                I_7 = closure\{E\to xY.\} &= \{E\to xY.\} \\
+                I_{8} = closure\{Y\to y.Y\} &= \{Y\to y.Y, Y\to .yY, Y\to .z\} \\
+                I_{9} = closure\{Y\to z.\} &= \{Y\to z.\} \\
+                I_{10} = closure\{X\to yX.\} &= \{X\to yX.\} \\
+                I_{11} = closure\{Y\to yY.\} &= \{Y\to yY.\} \\
+            \end{align*}
+            上述所有均为 $LR(0)$ 的组成部分。
+
+        \subsubsection*{(4) 构造 DFA}
+            构造所得的 DFA 参图\ref{dfa}。
+            \begin{figure}[htbp!]
+                \centering
+                \includegraphics[scale=0.1]{DFA.jpg}
+                \caption{DFA图}
+                \label{dfa}
+            \end{figure}
+
+    \subsection*{2 构造 LR(0) 转移表}
+
+        GOTO 分析表参见表\ref{lr0goto}。
+        \begin{table}[htbp!]
+            \centering
+            \begin{tabular}{|c|c|c|c|c|c|c|c|}
+                \hline
+                & \multicolumn{7}{|c|}{GOTO} \\
+                \hline
+                状态 & $w$ & $x$ & $y$ & $z$ & $E$ & $X$ & $Y$ \\
+                \hline
+                0    &  2  &  3  &     &     &  1  &     &     \\
+                \hline
+                1    &     &     &     &     &     &     &     \\
+                \hline
+                2    &     &     &  5  &  6  &     &  4  &     \\
+                \hline
+                3    &     &     &  8  &  9  &     &     & 11  \\
+                \hline
+                4    &     &     &     &     &     &     &     \\
+                \hline
+                5    &     &     &  5  &  6  &     & 10  &     \\
+                \hline
+                6    &     &     &     &     &     &     &     \\
+                \hline
+                7    &     &     &     &     &     &     &     \\
+                \hline
+                8    &     &     &  8  &  9  &     &     & 11  \\
+                \hline
+                9    &     &     &     &     &     &     &     \\
+                \hline
+                10   &     &     &     &     &     &     &     \\
+                \hline
+                11   &     &     &     &     &     &     &     \\
+                \hline
+            \end{tabular}
+            \caption{该文法的 GOTO 分析表}
+            \label{lr0goto}
+        \end{table}    
+    
+        该文法的 LR(0) 分析表参见表\ref{lr0anal}。
+        \begin{table}[htbp!]
+            \centering
+            \begin{tabular}{|c|c|c|c|c|c|c|c|c|}
+                \hline
+                & \multicolumn{7}{|c|}{GOTO} & Action\\
+                \hline
+                状态 & $w$ & $x$ & $y$ & $z$ & $E$ & $X$ & $Y$ &      \\
+                \hline
+                0    &$S_2$&$S_3$&     &     &$S_1$&     &     & Shift \\
+                \hline
+                1    &     &     &     &     &     &     &     & Accept \\
+                \hline
+                2    &     &     &$S_5$&$S_6$&     &$S_4$&     & Shift \\
+                \hline
+                3    &     &     &$S_8$&$S_9$&     &     &$S_{11}$& Shift \\
+                \hline
+                4    &     &     &     &     &     &     &     & $r_2$ \\
+                \hline
+                5    &     &     &$S_5$&$S_6$&     &$S_{10}$&     & Shift \\
+                \hline
+                6    &     &     &     &     &     &     &     & $r_5$ \\
+                \hline
+                7    &     &     &     &     &     &     &     & $r_3$ \\
+                \hline
+                8    &     &     &$S_8$&$S_9$&     &     &$S_{11}$& Shift \\
+                \hline
+                9    &     &     &     &     &     &     &     & $r_7$ \\
+                \hline
+                10   &     &     &     &     &     &     &     & $r_4$ \\
+                \hline
+                11   &     &     &     &     &     &     &     & $r_6$ \\
+                \hline
+            \end{tabular}
+            \caption{该文法的 LR(0) 分析表}
+            \label{lr0anal}
+        \end{table}
+
+\section*{12-5.2}
+    \subsection*{(1)}
+        $wyzz$ 的 LR(0) 分析过程参见表 \ref{wyyz}。
+        \begin{table}[htbp!]
+            \centering
+            \begin{tabular}{|c|c|c|c|c|c|}
+                \hline
+                步骤 & 符号栈 & 输入串 & 活前缀 & 句柄 & 动作 \\
+                \hline
+                1 & $0$ & $wyyz$ &  &  & Shift \\
+                \hline
+                2 & $0w2$ & $yyz$ & $w$ & & Shift \\
+                \hline
+                3 & $0w2y5$ & $yz$ & $wy$ & & Shift \\
+                \hline
+                4 & $0w2y5y5$ & $z$ & $wyy$ & & Shift \\
+                \hline
+                5 & $0w2y5y5z6$ &  & $wyyz$ & $z$ & $X\to z$ \\
+                \hline
+                6 & $0w2y5y5X10$ &  & $wyyX$ & $yX$ & $X\to yX$ \\
+                \hline
+                7 & $0w2y5X10$ &  & $wyX$ & $yX$ & $X\to yX$ \\
+                \hline
+                8 & $0w2X4$ &  & $wX$ & $wX$ & $E\to wX$ \\
+                \hline
+                8 & $0E1$ &  &  &  & Accept \\
+                \hline
+            \end{tabular}
+            \caption{$wyyz$的 LR(0) 分析过程}
+            \label{wyyz}
+        \end{table}
+    
+    \subsection*{(2)}
+        $xyyyz$ 的 LR(0) 分析过程参见表 \ref{xyyyz}。
+        \begin{table}[htbp!]
+            \centering
+            \begin{tabular}{|c|c|c|c|c|c|}
+                \hline
+                步骤 & 符号栈 & 输入串 & 活前缀 & 句柄 & 动作 \\
+                \hline
+                1 & $0$ & $xyyyz$ &  &  & Shift \\
+                \hline
+                2 & $0x3$ & $yyyz$ & $x$ &  & Shift \\
+                \hline
+                3 & $0x3y8$ & $yyz$ & $xy$ &  & Shift \\
+                \hline
+                4 & $0x3y8y8$ & $yz$ & $xyy$ &  & Shift \\
+                \hline
+                5 & $0x3y8y8y8$ & $z$ & $xyyy$ &  & Shift \\
+                \hline
+                6 & $0x3y8y8y8z9$ &  & $xyyyz$ & $z$ & $Y\to z$ \\
+                \hline
+                7 & $0x3y8y8Y11$ &  & $xyyY$ & $yY$ & $Y\to yY$ \\
+                \hline
+                8 & $0x3y8Y11$ &  & $xyY$ & $yY$ & $Y\to yY$ \\
+                \hline
+                9 & $0x3Y11$ &  & $xY$ & $xY$ & $E\to xY$ \\
+                \hline
+                10 & $0E1$ &  &  &  & Accept \\
+                \hline
+                
+            \end{tabular}
+            \caption{$xyyyz$的 LR(0) 分析过程}
+            \label{xyyyz}
+        \end{table}
+
+\section*{12-5.6}
+    根据和上题完全相同的做法，我们可以构造出该文法的 GOTO 表，参见表\ref{slr1goto}。
+    草稿纸参见\ref{slr0}
+    \begin{figure}[htbp!]
+        \centering
+        \includegraphics[scale=0.08]{LR0.jpg}
+        \caption{SLR0 构造的草稿纸}
+        \label{slr0}
+    \end{figure}
+
+    \begin{table}[htbp!]
+        \centering
+        \begin{tabular}{|c|c|c|c|c|c|c|c|c|c|c|}
+            \hline
+            & \multicolumn{10}{|c|}{GOTO}  \\
+            \hline
+            State &  $s$  &  $e$  &  $;$  &  $b$  &  $d$  &  $P$  &  $C$  &  $B$  &  $H$  &  $T$  \\
+            \hline
+            0     &       &       &       &   3   &       &   6   &  1    &   2   &   4   &       \\
+            \hline
+            1     &       &       &       &       &       &       &       &       &       &       \\
+            \hline
+            2     &       &       &       &       &       &       &       &       &       &       \\
+            \hline
+            3     &   7   &       &       &       &  13   &       &       &       &       &   5   \\
+            \hline
+            4     &       &       &   8   &       &       &       &       &       &       &       \\
+            \hline
+            5     &       &       &       &       &       &       &       &       &       &       \\
+            \hline
+            6     &       &       &       &       &       &       &       &       &       &       \\
+            \hline
+            7     &       &   9   &   10  &       &       &       &       &       &       &       \\
+            \hline
+            8     &   7   &       &       &       &  14   &       &       &       &       &       \\
+            \hline
+            9     &       &       &       &       &       &       &       &       &       &       \\
+            \hline
+            10    &   7   &       &       &       &       &       &       &       &       &   12  \\
+            \hline
+            11    &       &       &       &       &       &       &       &       &       &       \\
+            \hline
+            12    &       &       &       &       &       &       &       &       &       &       \\
+            \hline
+            13    &       &       &       &       &       &       &       &       &       &       \\
+            \hline
+            14    &       &       &       &       &       &       &       &       &       &       \\
+            \hline
+            
+        \end{tabular}
+        \caption{该文法的 GOTO 分析表}
+        \label{slr1goto}
+    \end{table}
+
+    依序构造 FOLLOW 集如下：
+    \begin{align*}
+        FOLLOW(P) &= \{\#\} \\
+        FOLLOW(C) &= \{\#\} \\
+        FOLLOW(B) &= \{\#\} \\
+        FOLLOW(T) &= \{\#\} \\
+        FOLLOW(H) &= \{;\} \\
+    \end{align*}
+
+    因此可以推得其 SLR 分析表参表\ref{slr1}。
+
+    \begin{table}[htbp!]
+        \centering
+        \begin{tabular}{|c|c|c|c|c|c|c|c|c|c|c|c|}
+            \hline
+            & \multicolumn{11}{|c|}{GOTO}  \\
+            \hline
+            State &  $s$  &  $e$  &  $;$  &  $b$  &  $d$  &  $\#$ &  $P$  &  $C$  &  $B$  &  $H$  &  $T$  \\
+            \hline
+            0     &       &       &       & $S_3$ &       &       &   6   &  1    &   2   &   4   &       \\
+            \hline
+            1     &       &       &       &       &       &  acc  &       &       &       &       &       \\
+            \hline
+            2     &       &       &       &       &       & $r_2$ &       &       &       &       &       \\
+            \hline
+            3     & $S_7$ &       &       &       &$S_{13}$&      &       &       &       &       & $S_5$ \\
+            \hline
+            4     &       &       & $S_8$ &       &       &       &       &       &       &       &       \\
+            \hline
+            5     &       &       & $r_5$ &       &       &       &       &       &       &       &       \\
+            \hline
+            6     &       &       &       &       &       & $r_3$ &       &       &       &       &       \\
+            \hline
+            7     &       & $S_9$ &$S_{10}$&      &       &       &       &       &       &       &       \\
+            \hline
+            8     & $S_7$ &       &       &       &$S_{14}$&      &       &       &       &       &       \\
+            \hline
+            9     &       &       &       &       &       & $r_7$ &       &       &       &       &       \\
+            \hline
+            10    & $S_7$ &       &       &       &       &       &       &       &       &       &  12   \\
+            \hline
+            11    &       &       &       &       &       & $r_4$ &       &       &       &       &       \\
+            \hline
+            12    &       &       &       &       &       & $r_8$ &       &       &       &       &       \\
+            \hline
+            13    &       &       &       &       &       & $r_5$ &       &       &       &       &       \\
+            \hline
+            14    &       &       &       &       &       & $r_6$ &       &       &       &       &       \\
+            \hline
+            
+        \end{tabular}
+        \caption{该文法的 SLR 分析表}
+        \label{slr1}
+    \end{table}
+
+\section*{12-5.9}
+    画出转移图后可以发现，$I_0$的第二项，使得$ACTION[0, a]$为移入2进展，因为$FOLLOW(Y)$包含$a$。$I_0$的第四项使得$ACTION[0, a]$为按$Y\to \varepsilon$规约，$ACTION[0, a]$有多重含义，故不是$SLR(1)$文法。
+
+\section*{12-6}
+    \subsection*{(1)}
+        显然：
+        \begin{align*}
+            S &\to .E \\
+            S &\to E. \\
+            E &\to .E-T \\
+            E &\to E.-T \\
+            E &\to E-.T \\
+            E &\to E-T. \\
+            E &\to .T \\
+            E &\to T. \\
+            T &\to .T*F \\
+            T &\to T.*F \\
+            T &\to T*.F \\
+            T &\to T*F. \\
+            T &\to .F \\
+            T &\to F. \\
+            F &\to .i \\
+            F &\to i. \\
+            F &\to .(E) \\
+            F &\to (.E) \\
+            F &\to (E.) \\
+            F &\to (E). \\
+        \end{align*}
+    \subsection*{(2)}
+        分析表参表\ref{lr1table}
+        \begin{table}[htbp!]
+            \centering
+            \begin{tabular}{|c|c|c|c|c|c|c|c|c|c|}
+                \hline
+                & \multicolumn{6}{|c|}{Action} & \multicolumn{3}{|c|}{GOTO} \\
+                \hline
+                State & $-$ & $*$ & $i$ & $($ & $)$ & $\#$ & $E$ & $T$ & $F$ \\
+                \hline
+                0 & & $S_4$ & $S_5$ & & & & 1 & 2 & 3 \\
+                \hline
+                1 & $S_6$ & & & & & acc & & & \\
+                \hline
+                2 & $r_3$ & $S_7$ & & & & $r_3$ & & & \\
+                \hline
+                3 & $r_5$ & $r_5$ & & & & $r_5$ & & & \\
+                \hline
+                4 & $r_6$ & $r_6$ & & & & $r_6$ & & & \\
+                \hline
+                5 & & & $S_{11}$ & $S_{12}$ & & & 8 & 9 & 10 \\
+                \hline
+                6 & & & $S_4$ & $S_5$ & & & & 13 & 3 \\
+                \hline
+                7 & & & $S_4$ & $S_5$ & & & & & 14 \\
+                \hline
+                8 & $S_{16}$ & & & & $S_{15}$ & & & & \\
+                \hline
+                9 & $r_3$ & $S_{17}$ & & & $r_3$ & & & & \\
+                \hline
+                10 & $r_5$ & $r_5$ & & & $r_5$ & & & & \\
+                \hline
+                11 & $r_6$ & $r_6$ & & & $r_6$ & & & & \\
+                \hline
+                12 & & & $S_{11}$ & $S_{12}$ & & & & & \\
+                \hline
+                13 & $r_2$ & $r_7$ & & & $r_2$ & & & & \\
+                \hline
+                14 & $r_4$ & $r_4$ & & & $r_4$ & & & & \\
+                \hline
+                15 & $r_7$ & $r_7$ & & & $r_7$ & & & & \\
+                \hline
+                16 & & & $S_{11}$ & $S_{12}$ & & & & 19 & 10 \\
+                \hline
+                17 & & & $S_{11}$ & $S_{12}$ & & & & & 20 \\
+                \hline
+                18 & $S_{16}$ & & & & $S_{21}$ & & & & \\
+                \hline
+                19 & $r_2$ & $S_17$ & & & $r_2$ & & & & \\
+                \hline
+                20 & $r_4$ & $r_4$ & & & $r_4$ & & & & \\
+                \hline
+                21 & $r_7$ & $r_7$ & & & $r_7$ & & & & \\
+                \hline
+            \end{tabular}
+            \caption{该文法的 SLR 分析表}
+            \label{lr1table}
+        \end{table}
+    \subsection*{(3)}
+
+        $(i-i)* i$ 的 LR(1) 分析过程参见表\ref{pos}。
+        \begin{table}[htbp!]
+            \centering
+            \begin{tabular}{|c|c|c|c|c|c|}
+                \hline
+                步骤 & 符号栈 & 输入串 & 活前缀 & 句柄 \\
+                \hline
+                \hline
+                1 & $0$ & $(i-i)*i\#$ &  &   \\
+                \hline
+                2 & $0(5$ & $i-i)*i\#$ & $($  &   \\
+                \hline
+                3 & $0(5i11$ & $-i)*i\#$ & $(i$  & $i$ \\
+                \hline
+                4 & $0(5F10$ & $-i)*i\#$ & $(F$  & $F$ \\
+                \hline
+                5 & $0(5F9$ & $-i)*i\#$ & $(T$  & $T$ \\
+                \hline
+                6 & $0(5E8$ & $-i)*i\#$ & $(E$  & \\
+                \hline
+                7 & $0(5E8-16$ & $i)*i\#$ & $(E-$  & \\
+                \hline
+                8 & $0(5E8-16i11$ & $)*i\#$ & $(E-i$  & $i$ \\
+                \hline
+                9 & $0(5E8-16F10$ & $)*i\#$ & $(E-F$  & $F$\\
+                \hline
+                10 & $0(5E8-16T19$ & $)*i\#$ & $(E-T$  & $E-T$ \\
+                \hline
+                11 & $0(5E8$ & $)*i\#$ & $(E$  &  \\
+                \hline
+                12 & $0(5E8)15$ & $*i\#$ & $(E)$  & $(E)$ \\
+                \hline
+                13 & $0F3$ & $*i\#$ & $F$  & $F$ \\
+                \hline
+                14 & $0T2$ & $*i\#$ & $T$  & \\
+                \hline
+                15 & $0T2*7$ & $i\#$ & $T*$  & \\
+                \hline
+                16 & $0T2*7i4$ & $\#$ & $T*i$  & $i$ \\
+                \hline
+                17 & $0T2*7F14$ & $\#$ & $T*F$  & $T*F$ \\
+                \hline
+                18 & $0T2$ & $\#$ & $T$  & $T$ \\
+                \hline
+                19 & $0E1$ & $\#$ &  & \\
+                \hline
+                
+            \end{tabular}
+            \caption{$(i-i)* i$的 LR(1) 分析过程}
+            \label{pos}
+        \end{table}
+
+        $i-i*i$ 的分析过程参见表\ref{sop}
+        \begin{table}[htbp!]
+            \centering
+            \begin{tabular}{|c|c|c|c|c|c|}
+                \hline
+                步骤 & 符号栈 & 输入串 & 活前缀 & 句柄 \\
+                \hline
+                1 & $0$ & $i-i*i\#$ &  &   \\
+                \hline
+                2 & $0i4$ & $-i*i\#$ & $i$ & $i$  \\
+                \hline
+                3 & $0F3$ & $-i*i\#$ & $F$ & $F$  \\
+                \hline
+                4 & $0T2$ & $-i*i\#$ & $T$ & $T$  \\
+                \hline
+                5 & $0E1$ & $-i*i\#$ & $E$ &  \\
+                \hline
+                6 & $0E1-6$ & $i*i\#$ & $E-$ &  \\
+                \hline
+                7 & $0E1-6i4$ & $*i\#$ & $E-i$ & $i$ \\
+                \hline
+                8 & $0E1-6F3$ & $*i\#$ & $E-F$ & $F$ \\
+                \hline
+                9 & $0E1-6T13$ & $*i\#$ & $E-T$ & \\
+                \hline
+                10 & $0E1-6T13*7$ & $i\#$ & $E-T*$ & \\
+                \hline
+                11 & $0E1-6T13*7i4$ & $\#$ & $E-T*i$ & $i$ \\
+                \hline
+                12 & $0E1-6T13*7F14$ & $\#$ & $E-T*F$ & $T*F$ \\
+                \hline
+                13 & $0E1-6T13$ & $\#$ & $E-T$ & $E-T$ \\
+                \hline
+                14 & $0E1$ & $\#$ & & \\
+                \hline
+            \end{tabular}
+            \caption{$i-i*i$的 LR(1) 分析过程}
+            \label{sop}
+        \end{table}
+
+\end{document}
